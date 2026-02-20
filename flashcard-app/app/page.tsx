@@ -20,9 +20,9 @@ export default function WelcomePage() {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const flashcards = [
-    { front: 'Hello', back: 'Xin chào', emoji: '👋' },
-    { front: 'Learn', back: 'Học', emoji: '📚' },
-    { front: 'Success', back: 'Thành công', emoji: '🎯' }
+    { front: 'Xin chào', back: 'Hello', emoji: '👋' },
+    { front: 'Học', back: 'Learn', emoji: '📚' },
+    { front: 'Thành công', back: 'Success', emoji: '🎯' }
   ];
 
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function WelcomePage() {
                 </motion.button>
 
                 <motion.button
-                  onClick={() => alert('Demo coming soon!')}
+                  onClick={() => alert('🎬 Demo sẽ có sớm thôi!')}
                   className="group px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold border-2 border-gray-200 hover:border-blue-600 hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2"
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
@@ -192,13 +192,13 @@ export default function WelcomePage() {
                     <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       {stat.value}
                     </div>
-                    <div className="text-sm text-gray-600">{stat.label}</div>
+                    <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
                   </div>
                 ))}
               </motion.div>
             </motion.div>
 
-            {/* Right 3D Cards */}
+            {/* Right 3D Cards - FIXED VERSION */}
             <motion.div 
               className="relative h-[400px] sm:h-[450px] md:h-[500px] z-10"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -206,7 +206,7 @@ export default function WelcomePage() {
               transition={{ delay: 0.4, duration: 0.8 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-full max-w-sm perspective-1000">
+                <div className="relative w-full max-w-sm" style={{ perspective: '1000px' }}>
                   <AnimatePresence mode="wait">
                     {flashcards.map((card, index) => {
                       const offset = index - currentCard;
@@ -240,28 +240,33 @@ export default function WelcomePage() {
                           <div 
                             className="relative w-full h-80 cursor-pointer"
                             onClick={() => offset === 0 && setIsFlipped(!isFlipped)}
+                            style={{ transformStyle: 'preserve-3d' }}
                           >
-                            {/* Front */}
+                            {/* Front - TIẾNG VIỆT */}
                             <div 
-                              className="absolute inset-0 backface-hidden bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl border-2 border-blue-100 p-8 flex flex-col items-center justify-center"
-                              style={{ backfaceVisibility: 'hidden' }}
-                            >
-                              <div className="text-6xl mb-6">{card.emoji}</div>
-                              <h3 className="text-4xl font-bold text-gray-900 mb-2">{card.front}</h3>
-                              <p className="text-gray-500 text-sm">Click để lật thẻ</p>
-                            </div>
-
-                            {/* Back */}
-                            <div 
-                              className="absolute inset-0 backface-hidden bg-gradient-to-br from-purple-500 to-blue-600 rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center"
+                              className="absolute inset-0 bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl border-2 border-blue-100 p-8 flex flex-col items-center justify-center"
                               style={{ 
                                 backfaceVisibility: 'hidden',
-                                transform: 'rotateY(180deg)'
+                                WebkitBackfaceVisibility: 'hidden'
                               }}
                             >
                               <div className="text-6xl mb-6">{card.emoji}</div>
+                              <h3 className="text-4xl font-bold text-gray-900 mb-2">{card.front}</h3>
+                              <p className="text-gray-500 text-sm">🇻🇳 Tiếng Việt - Click để lật</p>
+                            </div>
+
+                            {/* Back - TIẾNG ANH (FIXED - không bị ngược) */}
+                            <div 
+                              className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-600 rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center"
+                              style={{ 
+                                backfaceVisibility: 'hidden',
+                                WebkitBackfaceVisibility: 'hidden',
+                                transform: 'rotateY(180deg)'
+                              }}
+                            >
+                              <div className="text-6xl mb-6" style={{ transform: 'scaleX(1)' }}>{card.emoji}</div>
                               <h3 className="text-4xl font-bold text-white mb-2">{card.back}</h3>
-                              <p className="text-blue-100 text-sm">Nghĩa tiếng Việt</p>
+                              <p className="text-blue-100 text-sm">🇬🇧 English Translation</p>
                             </div>
                           </div>
                         </motion.div>
@@ -396,13 +401,6 @@ export default function WelcomePage() {
         }
         .animation-delay-4000 {
           animation-delay: 4s;
-        }
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-        .backface-hidden {
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
         }
       `}</style>
     </div>
