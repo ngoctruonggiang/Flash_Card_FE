@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { userApi } from '@/src/api/userApi';
 
 interface User {
   id: string;
@@ -21,7 +22,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const FAKE_USERS = [
+export const FAKE_USERS = [
   {
     id: '1',
     username: 'duchai1703',
@@ -45,6 +46,14 @@ const FAKE_USERS = [
     password: '123456',
     name: 'Trường Danh',
     avatar: '👨‍🔬'
+  },
+  {
+    id: '4',
+    username: 'admin',
+    email: 'admin@example.com',
+    password: 'admin123456',
+    name: 'Administrator',
+    avatar: '👑'
   }
 ];
 
@@ -75,23 +84,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       u => u.email === email && u.password === password
     );
 
-    if (foundUser) {
-      const userData = {
-        id: foundUser.id,
-        username: foundUser.username,
-        email: foundUser.email,
-        name: foundUser.name,
-        avatar: foundUser.avatar
-      };
-      
-      setUser(userData);
-      window.localStorage.setItem('flashlearn_user', JSON.stringify(userData));
+
+    // Legacy Code
+    {
+      if (foundUser) {
+        const userData = {
+          id: foundUser.id,
+          username: foundUser.username,
+          email: foundUser.email,
+          name: foundUser.name,
+          avatar: foundUser.avatar
+        };
+        setUser(userData);
+      }
+      else
+      {
+        setIsLoading(false);
+        return false;
+      }
+    }
+        
+    try {
+      const response = (await userApi.signIn({ 
+        email: email, 
+        password: password 
+      })).data.data!;
+
+      window.localStorage.setItem('access_token', response.accessToken);
+      window.localStorage.setItem('flashcard_user', JSON.stringify(response));
       setIsLoading(false);
       return true;
+    } 
+    catch (error) {
+      console.error('Login API error:', error);
+      setIsLoading(false);
+      return false;
     }
-
-    setIsLoading(false);
-    return false;
   };
 
   const register = async (username: string, email: string, password: string): Promise<boolean> => {
@@ -105,18 +133,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
-    const newUser = {
-      id: Date.now().toString(),
-      username,
-      email,
-      name: username,
-      avatar: '🎓'
-    };
+    // Legacy code
+    {
+      const newUser = {
+        id: Date.now().toString(),
+        username,
+        email,
+        name: username,
+        avatar: '🎓'
+      };
+      
+      setUser(newUser);
+      window.localStorage.setItem('flashlearn_user', JSON.stringify(newUser));
+    }
 
-    setUser(newUser);
-    window.localStorage.setItem('flashlearn_user', JSON.stringify(newUser));
-    setIsLoading(false);
-    return true;
+    
+    try {
+      const response = (await userApi.signIn({ 
+        email: email, 
+        password: password 
+      })).data.data!;
+
+      window.localStorage.setItem('access_token', response.accessToken);
+      window.localStorage.setItem('flashcard_user', JSON.stringify(response));
+      setIsLoading(false);
+      return true;
+    } 
+    catch (error) {
+      console.error('Login API error:', error);
+      setIsLoading(false);
+      return false;
+    }
   };
 
   const logout = () => {

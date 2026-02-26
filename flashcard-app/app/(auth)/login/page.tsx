@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
+import { FAKE_USERS, useAuth } from '@/context/AuthContext';
+import { userApi } from '@/src/api/userApi';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function LoginPage() {
     password: ''
   });
 
+  // Login Here
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -32,7 +34,6 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
   // Quick login function for testing
   const quickLogin = (email: string, password: string) => {
     setFormData({ email, password });
@@ -122,30 +123,19 @@ export default function LoginPage() {
           <div className="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
             <p className="text-sm font-semibold text-blue-900 mb-3">🧪 Tài khoản test (click để điền nhanh):</p>
             <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => quickLogin('duchai1703@gmail.com', '123456')}
-                className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-              >
-                <p className="text-sm font-semibold text-gray-900">👨‍💻 Đức Hải</p>
-                <p className="text-xs text-gray-600">duchai1703@gmail.com / 123456</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => quickLogin('hao@gmail.com', '123456')}
-                className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-              >
-                <p className="text-sm font-semibold text-gray-900">👨‍🎓 Hào</p>
-                <p className="text-xs text-gray-600">hao@gmail.com / 123456</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => quickLogin('truongdanh@gmail.com', '123456')}
-                className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-              >
-                <p className="text-sm font-semibold text-gray-900">👨‍🔬 Trường Danh</p>
-                <p className="text-xs text-gray-600">truongdanh@gmail.com / 123456</p>
-              </button>
+              {FAKE_USERS.map((user, index) => {
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => quickLogin(user.email, user.password)}
+                    className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                  >
+                    <p className="text-sm font-semibold text-gray-900">{user.avatar} {user.name}</p>
+                    <p className="text-xs text-gray-600">{user.email} / {user.password}</p>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
