@@ -5,12 +5,17 @@ import { motion } from 'framer-motion';
 import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, User, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // TODO: Front end bỏ cái này vào nha nếu nó bị lỗi
+  // Chứ đừng bỏ alert
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -28,12 +33,17 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
+
     // Simulate API call
-    setTimeout(() => {
-      console.log('Register:', formData);
-      alert('🎉 Đăng ký thành công! Chào mừng đến FlashLearn!');
+    
+    const success = await register(formData.username, formData.email, formData.password);
+
+    if (success) {
       router.push('/dashboard');
-    }, 1500);
+    } else {
+      alert('❌ Tài khoản đã tồn tại hay cái gì đấy!');
+      setIsLoading(false);
+    }
   };
 
   const passwordStrength = (password: string) => {

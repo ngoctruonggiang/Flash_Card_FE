@@ -149,9 +149,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     
     try {
-      const response = (await userApi.signIn({ 
+      const response = (await userApi.signUp({ 
+        username: username,
         email: email, 
-        password: password 
+        password: password,
       })).data.data!;
 
       window.localStorage.setItem('access_token', response.accessToken);
