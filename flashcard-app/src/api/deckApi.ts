@@ -25,9 +25,13 @@ export const deckApi = {
   create: (data: CreateDeckDto) =>
     apiClient.post<ApiResponseDto<DeckResponse>>("/deck", data),
 
-  // optional userId query param to filter decks by user
-  findAll: (userId?: number) =>
-    apiClient.get<ApiResponseDto<DeckResponse[]>>("/deck", {
+  // Get all decks for current user (API section 2.2)
+  getAllForCurrentUser: () =>
+    apiClient.get<ApiResponseDto<DeckResponse[]>>("/deck"),
+
+  // Find decks with optional userId filter (API section 2.3)
+  findBy: (userId?: number) =>
+    apiClient.get<ApiResponseDto<DeckResponse[]>>("/deck/by", {
       params: userId !== undefined ? { userId } : undefined,
     }),
 
