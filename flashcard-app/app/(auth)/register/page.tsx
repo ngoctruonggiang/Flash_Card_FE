@@ -1,11 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, User, Check } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  BookOpen,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Loader2,
+  User,
+  Check,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,33 +25,37 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   // TODO: Front end bỏ cái này vào nha nếu nó bị lỗi
   // Chứ đừng bỏ alert
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
-      alert('❌ Mật khẩu không khớp!');
+      alert("❌ Mật khẩu không khớp!");
       return;
     }
 
     setIsLoading(true);
 
-
     // Simulate API call
-    
-    const success = await register(formData.username, formData.email, formData.password);
+
+    const success = await register(
+      formData.username,
+      formData.email,
+      formData.password,
+      formData.confirmPassword
+    );
 
     if (success) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else {
-      alert('❌ Tài khoản đã tồn tại hay cái gì đấy!');
+      alert("❌ Tài khoản đã tồn tại hay cái gì đấy!");
       setIsLoading(false);
     }
   };
@@ -57,8 +71,8 @@ export default function RegisterPage() {
   };
 
   const strength = passwordStrength(formData.password);
-  const strengthColor = ['gray', 'red', 'orange', 'yellow', 'green'][strength];
-  const strengthText = ['', 'Yếu', 'Trung bình', 'Khá', 'Mạnh'][strength];
+  const strengthColor = ["gray", "red", "orange", "yellow", "green"][strength];
+  const strengthText = ["", "Yếu", "Trung bình", "Khá", "Mạnh"][strength];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -70,9 +84,8 @@ export default function RegisterPage() {
       </div>
 
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center relative z-10">
-        
         {/* Left Side - Branding */}
-        <motion.div 
+        <motion.div
           className="hidden lg:block space-y-6"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -92,17 +105,18 @@ export default function RegisterPage() {
           <h1 className="text-5xl font-bold text-gray-900 leading-tight">
             Bắt đầu hành trình học tập! 🚀
           </h1>
-          
+
           <p className="text-xl text-gray-600">
-            Tham gia cùng hàng nghìn người học đang cải thiện vốn từ vựng mỗi ngày.
+            Tham gia cùng hàng nghìn người học đang cải thiện vốn từ vựng mỗi
+            ngày.
           </p>
 
           <div className="space-y-4 pt-8">
             {[
-              { icon: '✨', text: 'Hoàn toàn miễn phí, không giới hạn' },
-              { icon: '🎯', text: 'Tạo và quản lý flashcard dễ dàng' },
-              { icon: '📊', text: 'Theo dõi tiến độ chi tiết' },
-              { icon: '🧠', text: 'Thuật toán SM-2 thông minh' }
+              { icon: "✨", text: "Hoàn toàn miễn phí, không giới hạn" },
+              { icon: "🎯", text: "Tạo và quản lý flashcard dễ dàng" },
+              { icon: "📊", text: "Theo dõi tiến độ chi tiết" },
+              { icon: "🧠", text: "Thuật toán SM-2 thông minh" },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -138,8 +152,12 @@ export default function RegisterPage() {
           </Link>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Tạo tài khoản</h2>
-            <p className="text-gray-600">Miễn phí mãi mãi, không cần thẻ tín dụng</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Tạo tài khoản
+            </h2>
+            <p className="text-gray-600">
+              Miễn phí mãi mãi, không cần thẻ tín dụng
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -154,7 +172,9 @@ export default function RegisterPage() {
                   type="text"
                   required
                   value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="duchai1703"
                 />
@@ -172,7 +192,9 @@ export default function RegisterPage() {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="duchai1703@example.com"
                 />
@@ -187,10 +209,12 @@ export default function RegisterPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="••••••••"
                 />
@@ -199,21 +223,27 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
-              
+
               {/* Password Strength */}
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center space-x-2">
                     <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className={`h-full bg-${strengthColor}-500 transition-all duration-300`}
                         style={{ width: `${(strength / 4) * 100}%` }}
                       ></div>
                     </div>
-                    <span className={`text-sm font-medium text-${strengthColor}-600`}>
+                    <span
+                      className={`text-sm font-medium text-${strengthColor}-600`}
+                    >
                       {strengthText}
                     </span>
                   </div>
@@ -229,10 +259,15 @@ export default function RegisterPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   required
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
                   className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="••••••••"
                 />
@@ -241,31 +276,42 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
-              {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                <div className="mt-2 flex items-center space-x-1 text-green-600 text-sm">
-                  <Check className="w-4 h-4" />
-                  <span>Mật khẩu khớp</span>
-                </div>
-              )}
+              {formData.confirmPassword &&
+                formData.password === formData.confirmPassword && (
+                  <div className="mt-2 flex items-center space-x-1 text-green-600 text-sm">
+                    <Check className="w-4 h-4" />
+                    <span>Mật khẩu khớp</span>
+                  </div>
+                )}
             </div>
 
             {/* Terms Agreement */}
             <div className="flex items-start space-x-2">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 required
-                className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label className="text-sm text-gray-600">
-                Tôi đồng ý với{' '}
-                <button type="button" className="text-blue-600 hover:text-blue-700 font-medium">
+                Tôi đồng ý với{" "}
+                <button
+                  type="button"
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
                   Điều khoản dịch vụ
-                </button>
-                {' '}và{' '}
-                <button type="button" className="text-blue-600 hover:text-blue-700 font-medium">
+                </button>{" "}
+                và{" "}
+                <button
+                  type="button"
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
                   Chính sách bảo mật
                 </button>
               </label>
@@ -306,8 +352,11 @@ export default function RegisterPage() {
           {/* Login Link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Đã có tài khoản?{' '}
-              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+              Đã có tài khoản?{" "}
+              <Link
+                href="/login"
+                className="text-blue-600 hover:text-blue-700 font-semibold"
+              >
                 Đăng nhập ngay
               </Link>
             </p>
@@ -317,9 +366,16 @@ export default function RegisterPage() {
 
       <style jsx>{`
         @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
         }
         .animate-blob {
           animation: blob 7s infinite;

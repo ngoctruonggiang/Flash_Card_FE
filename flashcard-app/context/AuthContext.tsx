@@ -1,8 +1,14 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { userApi } from '@/src/api/userApi';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
+import { userApi } from "@/src/api/userApi";
 
 interface User {
   id: string;
@@ -15,7 +21,12 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, password: string) => Promise<boolean>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+  ) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -24,37 +35,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const FAKE_USERS = [
   {
-    id: '1',
-    username: 'duchai1703',
-    email: 'duchai1703@gmail.com',
-    password: '123456',
-    name: 'Đức Hải',
-    avatar: '👨‍💻'
+    id: "1",
+    username: "duchai1703",
+    email: "duchai1703@gmail.com",
+    password: "123456",
+    name: "Đức Hải",
+    avatar: "👨‍💻",
   },
   {
-    id: '2',
-    username: 'hao',
-    email: 'hao@gmail.com',
-    password: '123456',
-    name: 'Hào',
-    avatar: '👨‍🎓'
+    id: "2",
+    username: "hao",
+    email: "hao@gmail.com",
+    password: "123456",
+    name: "Hào",
+    avatar: "👨‍🎓",
   },
   {
-    id: '3',
-    username: 'truongdanh',
-    email: 'truongdanh@gmail.com',
-    password: '123456',
-    name: 'Trường Danh',
-    avatar: '👨‍🔬'
+    id: "3",
+    username: "truongdanh",
+    email: "truongdanh@gmail.com",
+    password: "123456",
+    name: "Trường Danh",
+    avatar: "👨‍🔬",
   },
   {
-    id: '4',
-    username: 'admin',
-    email: 'admin@example.com',
-    password: 'admin123456',
-    name: 'Administrator',
-    avatar: '👑'
-  }
+    id: "4",
+    username: "admin",
+    email: "admin@example.com",
+    password: "admin123456",
+    name: "Administrator",
+    avatar: "👑",
+  },
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -64,12 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const savedUser = window.localStorage.getItem('flashlearn_user');
+      const savedUser = window.localStorage.getItem("flashlearn_user");
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
     } catch (err) {
-      console.error('Error loading user:', err);
+      console.error("Error loading user:", err);
     } finally {
       setIsLoading(false);
     }
@@ -77,57 +88,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const foundUser = FAKE_USERS.find(
-      u => u.email === email && u.password === password
-    );
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    // Try API authentication first
+    try {
+      const response = (
+        await userApi.signIn({
+          email: email,
+          password: password,
+        })
+      ).data.data!;
 
-    // Legacy Code
-    {
+      window.localStorage.setItem("access_token", response.accessToken);
+      window.localStorage.setItem("flashcard_user", JSON.stringify(response));
+
+      // Set user from API response
+      const userData = {
+        id: response.id.toString(),
+        username: response.username,
+        email: response.email,
+        name: response.username, // Use username as name if not provided
+        avatar: "🎓", // Default avatar
+      };
+      setUser(userData);
+      window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
+
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Login API error:", error);
+
+      // Fallback to fake users for testing if API fails
+      const foundUser = FAKE_USERS.find(
+        (u) => u.email === email && u.password === password
+      );
+
       if (foundUser) {
         const userData = {
           id: foundUser.id,
           username: foundUser.username,
           email: foundUser.email,
           name: foundUser.name,
-          avatar: foundUser.avatar
+          avatar: foundUser.avatar,
         };
         setUser(userData);
-      }
-      else
-      {
+        window.localStorage.setItem(
+          "flashlearn_user",
+          JSON.stringify(userData)
+        );
         setIsLoading(false);
-        return false;
+        return true;
       }
-    }
-        
-    try {
-      const response = (await userApi.signIn({ 
-        email: email, 
-        password: password 
-      })).data.data!;
 
-      window.localStorage.setItem('access_token', response.accessToken);
-      window.localStorage.setItem('flashcard_user', JSON.stringify(response));
-      setIsLoading(false);
-      return true;
-    } 
-    catch (error) {
-      console.error('Login API error:', error);
+      // Both API and fake users failed
       setIsLoading(false);
       return false;
     }
   };
 
-  const register = async (username: string, email: string, password: string): Promise<boolean> => {
+  const register = async (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+  ): Promise<boolean> => {
     setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const existingUser = FAKE_USERS.find(u => u.email === email);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const existingUser = FAKE_USERS.find((u) => u.email === email);
     if (existingUser) {
       setIsLoading(false);
       return false;
@@ -140,28 +170,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username,
         email,
         name: username,
-        avatar: '🎓'
+        avatar: "🎓",
       };
-      
+
       setUser(newUser);
-      window.localStorage.setItem('flashlearn_user', JSON.stringify(newUser));
+      window.localStorage.setItem("flashlearn_user", JSON.stringify(newUser));
     }
 
-    
     try {
-      const response = (await userApi.signUp({ 
-        username: username,
-        email: email, 
-        password: password,
-      })).data.data!;
+      const response = (
+        await userApi.signUp({
+          username: username,
+          email: email,
+          password: password,
+          confirmPassword: confirmPassword,
+        })
+      ).data.data!;
 
-      window.localStorage.setItem('access_token', response.accessToken);
-      window.localStorage.setItem('flashcard_user', JSON.stringify(response));
+      window.localStorage.setItem("access_token", response.accessToken);
+      window.localStorage.setItem("flashcard_user", JSON.stringify(response));
       setIsLoading(false);
       return true;
-    } 
-    catch (error) {
-      console.error('Login API error:', error);
+    } catch (error) {
+      console.error("Login API error:", error);
       setIsLoading(false);
       return false;
     }
@@ -169,8 +200,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    window.localStorage.removeItem('flashlearn_user');
-    router.push('/');
+    window.localStorage.removeItem("flashlearn_user");
+    router.push("/");
   };
 
   return (
@@ -183,7 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
