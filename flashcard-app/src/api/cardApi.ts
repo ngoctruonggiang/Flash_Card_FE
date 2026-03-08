@@ -1,5 +1,6 @@
 import apiClient from "../axios/axios";
 import { ApiResponseDto } from "./userApi";
+import type { DeckResponse } from "./deckApi";
 
 export interface CreateCardDto {
   deckId: number;
@@ -22,6 +23,8 @@ export interface CardResponse {
   tags: string | null;
   createdAt?: string;
   updatedAt?: string;
+  reviews?: any[]; // Array of review objects
+  deck?: DeckResponse; // Returned when getting card by ID
 }
 
 export const cardApi = {

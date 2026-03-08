@@ -1,36 +1,44 @@
-'use client';
+"use client";
 
-import { use, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { FAKE_USERS, useAuth } from '@/context/AuthContext';
-import { userApi } from '@/src/api/userApi';
+import { use, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  BookOpen,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { userApi } from "@/src/api/userApi";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
   // Login Here
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     const success = await login(formData.email, formData.password);
 
     if (success) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else {
-      setError('❌ Email hoặc mật khẩu không đúng!');
+      setError("❌ Email hoặc mật khẩu không đúng!");
       setIsLoading(false);
     }
   };
@@ -48,9 +56,8 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center relative z-10">
-        
         {/* Left Side - Branding */}
-        <motion.div 
+        <motion.div
           className="hidden lg:block space-y-6"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -70,16 +77,17 @@ export default function LoginPage() {
           <h1 className="text-5xl font-bold text-gray-900 leading-tight">
             Chào mừng trở lại! 👋
           </h1>
-          
+
           <p className="text-xl text-gray-600">
-            Tiếp tục hành trình học tập của bạn với phương pháp Spaced Repetition hiệu quả nhất.
+            Tiếp tục hành trình học tập của bạn với phương pháp Spaced
+            Repetition hiệu quả nhất.
           </p>
 
           <div className="space-y-4 pt-8">
             {[
-              { icon: '🎯', text: 'Theo dõi tiến độ học tập chi tiết' },
-              { icon: '🧠', text: 'Thuật toán SM-2 thông minh' },
-              { icon: '⚡', text: 'Học nhanh hơn, nhớ lâu hơn' }
+              { icon: "🎯", text: "Theo dõi tiến độ học tập chi tiết" },
+              { icon: "🧠", text: "Thuật toán SM-2 thông minh" },
+              { icon: "⚡", text: "Học nhanh hơn, nhớ lâu hơn" },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -114,37 +122,6 @@ export default function LoginPage() {
             </div>
           </Link>
 
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Đăng nhập</h2>
-            <p className="text-gray-600">Đăng nhập để tiếp tục học tập</p>
-          </div>
-
-          {/* Quick Login Buttons for Testing */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
-            <p className="text-sm font-semibold text-blue-900 mb-3">🧪 Tài khoản test (click để điền nhanh):</p>
-            <div className="space-y-2">
-              {FAKE_USERS.map((user, index) => {
-                return (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => quickLogin(user.email, user.password)}
-                    className="w-full text-left px-4 py-2 bg-white rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-                  >
-                    <p className="text-sm font-semibold text-gray-900">{user.avatar} {user.name}</p>
-                    <p className="text-xs text-gray-600">{user.email} / {user.password}</p>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
@@ -157,7 +134,9 @@ export default function LoginPage() {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="duchai1703@gmail.com"
                 />
@@ -172,10 +151,12 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="••••••••"
                 />
@@ -184,7 +165,11 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -192,10 +177,16 @@ export default function LoginPage() {
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
                 <span className="text-sm text-gray-600">Ghi nhớ đăng nhập</span>
               </label>
-              <button type="button" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Quên mật khẩu?
               </button>
             </div>
@@ -235,8 +226,11 @@ export default function LoginPage() {
           {/* Sign Up Link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Chưa có tài khoản?{' '}
-              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
+              Chưa có tài khoản?{" "}
+              <Link
+                href="/register"
+                className="text-blue-600 hover:text-blue-700 font-semibold"
+              >
                 Đăng ký ngay
               </Link>
             </p>
@@ -246,9 +240,16 @@ export default function LoginPage() {
 
       <style jsx>{`
         @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
         }
         .animate-blob {
           animation: blob 7s infinite;

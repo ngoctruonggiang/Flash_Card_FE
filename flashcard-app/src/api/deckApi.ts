@@ -1,5 +1,5 @@
 import apiClient from "../axios/axios";
-import { ApiResponseDto } from "./userApi";
+import { ApiResponseDto, UserResponse } from "./userApi";
 
 export interface CreateDeckDto {
   title: string;
@@ -17,6 +17,7 @@ export interface DeckResponse {
   description: string | null;
   userId: number;
   cards?: any[];
+  user?: UserResponse; // Returned when getting deck by ID
   createdAt?: string;
   updatedAt?: string;
 }

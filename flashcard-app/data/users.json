@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1763898416385,
+    "username": "testuser2",
+    "email": "testuser2@example.com",
+    "password": "Password123!",
+    "role": "USER",
+    "createdAt": "2025-11-23T11:46:56.385Z",
+    "lastLoginAt": null
+  },
+  {
+    "id": 1763899008152,
+    "username": "testuser5",
+    "email": "testuser5@example.com",
+    "password": "Password123!",
+    "role": "USER",
+    "createdAt": "2025-11-23T11:56:48.153Z",
+    "lastLoginAt": null
+  },
+  {
+    "id": 1763899178879,
+    "username": "test123abc",
+    "email": "test123abc@gmail.com",
+    "password": "test123abc",
+    "role": "USER",
+    "createdAt": "2025-11-23T11:59:38.879Z",
+    "lastLoginAt": null
+  }
+]
