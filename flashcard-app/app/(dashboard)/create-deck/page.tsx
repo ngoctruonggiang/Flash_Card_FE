@@ -189,6 +189,11 @@ export default function CreateDeckPage() {
         description: deckDescription || undefined,
       });
 
+      // Check if the response data is valid
+      if (!deckResponse.data.data) {
+        throw new Error("Failed to create deck: Invalid response from server");
+      }
+
       const newDeckId = deckResponse.data.data.id;
       console.log("Deck created:", deckResponse.data.data);
 

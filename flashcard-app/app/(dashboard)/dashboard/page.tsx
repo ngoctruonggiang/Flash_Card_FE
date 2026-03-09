@@ -51,7 +51,7 @@ export default function DashboardPage() {
         const response = await deckApi.getAllForCurrentUser();
 
         // Transform API data to match UI expectations
-        const transformedDecks = response.data.data.map(
+        const transformedDecks = (response.data.data ?? []).map(
           (deck: DeckResponse, index: number) => {
             const totalCards = deck.cards?.length || 0;
             // For now, we'll use placeholder values for studiedCards and dueCards
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + index * 0.1 }}
                     whileHover={{ y: -5 }}
-                    onClick={() => alert(`📚 Mở bộ thẻ: ${deck.name}`)}
+                    onClick={() => router.push(`/study?deckId=${deck.id}`)}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div
