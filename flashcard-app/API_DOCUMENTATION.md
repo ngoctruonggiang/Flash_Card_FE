@@ -713,6 +713,47 @@ Submit reviews for cards using the SM-2 spaced repetition algorithm.
 - `reviewedAt`: When the review was recorded
 - `quality`: The quality rating given in the review
 
+### 5.3 Get Review Preview
+
+Preview future review intervals for all quality options without submitting a review. This allows users to see what the next review date would be for each quality rating (Again, Hard, Good, Easy) before making their selection.
+
+- **URL**: `/study/preview/:id`
+- **Method**: `GET`
+- **Auth Required**: Yes
+- **URL Parameters**:
+  - `id`: ID of the card
+
+**Success Response (200 OK):**
+
+```json
+{
+  "statusCode": 200,
+  "timestamp": "2025-11-24T10:30:00.000Z",
+  "message": "Get Review Preview",
+  "data": {
+    "Again": "1 day",
+    "Hard": "6 days",
+    "Good": "15 days",
+    "Easy": "16 days"
+  },
+  "path": "/api/study/preview/1"
+}
+```
+
+**Response Field Descriptions:**
+
+- `Again`: Interval if the card is marked as "Again" (forgotten/incorrect)
+- `Hard`: Interval if the card is marked as "Hard" (difficult to recall)
+- `Good`: Interval if the card is marked as "Good" (correctly recalled)
+- `Easy`: Interval if the card is marked as "Easy" (very easy to recall)
+
+**Notes:**
+
+- This endpoint performs a read-only simulation and does not modify the card's review history
+- Intervals are calculated using the SM-2 algorithm based on the card's current state
+- For new cards (never reviewed), all intervals default to "1 day"
+- Intervals are formatted as human-readable strings (e.g., "1 day", "15 days")
+
 ---
 
 ## Error Responses
