@@ -725,6 +725,8 @@ Preview future review intervals for all quality options without submitting a rev
 
 **Success Response (200 OK):**
 
+Example for a **new card** (never reviewed):
+
 ```json
 {
   "statusCode": 200,
@@ -732,9 +734,26 @@ Preview future review intervals for all quality options without submitting a rev
   "message": "Get Review Preview",
   "data": {
     "Again": "1 day",
-    "Hard": "6 days",
+    "Hard": "1 day",
+    "Good": "3 days",
+    "Easy": "5 days"
+  },
+  "path": "/api/study/preview/1"
+}
+```
+
+Example for a card after 2 reviews (repetitions=2, interval=6, eFactor=2.5):
+
+```json
+{
+  "statusCode": 200,
+  "timestamp": "2025-11-24T10:30:00.000Z",
+  "message": "Get Review Preview",
+  "data": {
+    "Again": "1 day",
+    "Hard": "7 days",
     "Good": "15 days",
-    "Easy": "16 days"
+    "Easy": "20 days"
   },
   "path": "/api/study/preview/1"
 }
@@ -742,16 +761,35 @@ Preview future review intervals for all quality options without submitting a rev
 
 **Response Field Descriptions:**
 
-- `Again`: Interval if the card is marked as "Again" (forgotten/incorrect)
-- `Hard`: Interval if the card is marked as "Hard" (difficult to recall)
-- `Good`: Interval if the card is marked as "Good" (correctly recalled)
-- `Easy`: Interval if the card is marked as "Easy" (very easy to recall)
+- `Again`: Interval if the card is marked as "Again" (forgotten/incorrect) - always resets to 1 day
+- `Hard`: Interval if the card is marked as "Hard" (difficult to recall) - uses fixed 1.2x growth (for repetitions > 2)
+- `Good`: Interval if the card is marked as "Good" (correctly recalled) - uses standard SM-2 eFactor growth
+- `Easy`: Interval if the card is marked as "Easy" (very easy to recall) - uses eFactor with 1.3x bonus multiplier
+
+**Interval Calculation:**
+
+For **first review** (repetitions = 1):
+
+- **Hard:** 1 day
+- **Good:** 3 days
+- **Easy:** 5 days
+
+For **second review** (repetitions = 2):
+
+- All qualities: 6 days
+
+For **third+ reviews** (repetitions > 2):
+
+- **Hard:** `round(previous_interval * 1.2)` - Fixed 20% growth
+- **Good:** `round(previous_interval * eFactor)` - Standard SM-2 growth
+- **Easy:** `round(previous_interval * eFactor * 1.3)` - Bonus 30% growth
 
 **Notes:**
 
 - This endpoint performs a read-only simulation and does not modify the card's review history
 - Intervals are calculated using the SM-2 algorithm based on the card's current state
-- For new cards (never reviewed), all intervals default to "1 day"
+- **New cards** (never reviewed) show differentiated intervals: Hard=1, Good=3, Easy=5 days
+- Starting from the **first review**, intervals are differentiated by quality rating
 - Intervals are formatted as human-readable strings (e.g., "1 day", "15 days")
 
 ---

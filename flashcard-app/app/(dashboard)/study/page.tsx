@@ -17,6 +17,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { studyApi, CardReview } from "@/src/api/studyApi";
 import { CardResponse } from "@/src/api/cardApi";
+import { calculateSm2Intervals, Sm2Previews } from "@/src/utils/sm2";
 
 export default function StudyPage() {
   const router = useRouter();
@@ -27,6 +28,9 @@ export default function StudyPage() {
   const [reviews, setReviews] = useState<CardReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [intervalPreviews, setIntervalPreviews] = useState<Sm2Previews | null>(
+    null
+  );
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -66,6 +70,16 @@ export default function StudyPage() {
 
     fetchCards();
   }, [deckId]);
+
+  // Calculate previews when card is flipped
+  useEffect(() => {
+    if (isFlipped && cards[currentCardIndex]) {
+      const previews = calculateSm2Intervals(cards[currentCardIndex]);
+      setIntervalPreviews(previews);
+    } else {
+      setIntervalPreviews(null);
+    }
+  }, [isFlipped, currentCardIndex, cards]);
 
   const currentCard = cards[currentCardIndex];
   const progress =
@@ -385,7 +399,9 @@ export default function StudyPage() {
               >
                 <XCircle className="w-6 h-6" />
                 <span>Again</span>
-                <span className="text-xs opacity-80">&lt;1 min</span>
+                <span className="text-xs opacity-80">
+                  {intervalPreviews?.Again || "<1 min"}
+                </span>
               </motion.button>
 
               <motion.button
@@ -396,7 +412,9 @@ export default function StudyPage() {
               >
                 <span className="text-2xl">😕</span>
                 <span>Hard</span>
-                <span className="text-xs opacity-80">3 ngày</span>
+                <span className="text-xs opacity-80">
+                  {intervalPreviews?.Hard || "..."}
+                </span>
               </motion.button>
 
               <motion.button
@@ -407,7 +425,9 @@ export default function StudyPage() {
               >
                 <span className="text-2xl">😊</span>
                 <span>Good</span>
-                <span className="text-xs opacity-80">7 ngày</span>
+                <span className="text-xs opacity-80">
+                  {intervalPreviews?.Good || "..."}
+                </span>
               </motion.button>
 
               <motion.button
@@ -418,7 +438,9 @@ export default function StudyPage() {
               >
                 <CheckCircle className="w-6 h-6" />
                 <span>Easy</span>
-                <span className="text-xs opacity-80">14 ngày</span>
+                <span className="text-xs opacity-80">
+                  {intervalPreviews?.Easy || "..."}
+                </span>
               </motion.button>
             </motion.div>
           )}

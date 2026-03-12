@@ -44,13 +44,16 @@ When a review is completed on day `today` with mapped `quality`:
 - `next_review_date = today + 1`
 - `e_factor` unchanged (kept simple)
 
-### Case 2: Success (quality ≥ 3 → “Hard/Good/Easy”)
+### Case 2: Success (quality ≥ 3 → "Hard/Good/Easy")
 
 - Increment repetitions: `repetitions = repetitions + 1`
 - Interval calculation:
   - If `repetitions == 1`: interval = 1
   - If `repetitions == 2`: interval = 6
-  - Else: interval = round(previous_interval \* e_factor)
+  - Else (repetitions > 2), differentiate by quality:
+    - **Hard (quality = 3):** interval = round(previous_interval \* 1.2) — Fixed growth
+    - **Good (quality = 4):** interval = round(previous_interval \* e_factor) — Standard growth
+    - **Easy (quality = 5):** interval = round(previous*interval * e*factor * 1.3) — Bonus growth
 - Update ease factor:
   ```
   e' = e_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
@@ -63,9 +66,9 @@ When a review is completed on day `today` with mapped `quality`:
 ## 5. Behavior of the Algorithm
 
 - **Again:** forces the card to reappear soon (next day), helping weak cards stay in rotation.
-- **Hard:** grows the interval slowly, reducing pressure but keeping card reviews more frequent.
-- **Good:** grows the interval normally, giving steady progress.
-- **Easy:** grows the interval faster, quickly pushing strong cards further out.
+- **Hard:** grows the interval slowly with a fixed 1.2x multiplier, reducing pressure but keeping card reviews more frequent.
+- **Good:** grows the interval normally using the e_factor, giving steady progress based on card difficulty.
+- **Easy:** grows the interval faster with a 1.3x bonus on top of e_factor, quickly pushing strong cards further out.
 
 ---
 
@@ -76,8 +79,12 @@ When a review is completed on day `today` with mapped `quality`:
 2. Next day reviewed as **Good**:
    - repetitions = 2 → interval = 6 days → next review in 6 days.
 3. Later reviewed as **Easy**:
-   - interval ≈ previous*interval * e*factor (e.g., 6 * 2.5 ≈ 15 days).
-4. If reviewed as **Again**:
+   - interval = round(6 _ 2.5 _ 1.3) = 20 days (bonus growth for easy cards).
+4. If reviewed as **Hard** instead:
+   - interval = round(6 \* 1.2) = 7 days (fixed slow growth).
+5. If reviewed as **Good** instead:
+   - interval = round(6 \* 2.5) = 15 days (standard growth).
+6. If reviewed as **Again**:
    - resets to repetitions = 0, interval = 1, review again tomorrow.
 
 ---
