@@ -1,259 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  BookOpen,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Save,
-  Upload,
-  Download,
-  Sparkles,
-  AlertCircle,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { BookOpen, ArrowLeft, Save, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { deckApi } from "@/src/api/deckApi";
-import { cardApi } from "@/src/api/cardApi";
-
-interface Card {
-  id: string;
-  front: string;
-  back: string;
-}
+import { useDeckForm } from "@/src/hooks/useDeckForm";
+import { DeckInfoForm } from "@/src/components/create-deck/DeckInfoForm";
+import { CardList } from "@/src/components/create-deck/CardList";
+import { ImportExportMenu } from "@/src/components/create-deck/ImportExportMenu";
 
 export default function CreateDeckPage() {
   const router = useRouter();
-  const [deckName, setDeckName] = useState("");
-  const [deckDescription, setDeckDescription] = useState("");
-  const [cards, setCards] = useState<Card[]>([
-    { id: "1", front: "", back: "" },
-    { id: "2", front: "", back: "" },
-  ]);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Import từ CSV
-  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split("\n").filter((line) => line.trim());
-
-      // Parse CSV (format: front,back)
-      const importedCards: Card[] = lines
-        .map((line, index) => {
-          const [front, back] = line.split(",").map((s) => s.trim());
-          return {
-            id: Date.now().toString() + index,
-            front: front || "",
-            back: back || "",
-          };
-        })
-        .filter((card) => card.front && card.back);
-
-      if (importedCards.length > 0) {
-        setCards([...cards, ...importedCards]);
-        alert(`✅ Đã import ${importedCards.length} thẻ từ CSV!`);
-      } else {
-        alert('⚠️ File CSV không hợp lệ! Format: "Tiếng Việt,English"');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  };
-
-  // Import từ JSON
-  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target?.result as string);
-
-        if (data.name) setDeckName(data.name);
-        if (data.description) setDeckDescription(data.description);
-        if (data.cards && Array.isArray(data.cards)) {
-          const importedCards = data.cards.map((card: any, index: number) => ({
-            id: Date.now().toString() + index,
-            front: card.front || "",
-            back: card.back || "",
-          }));
-          setCards(importedCards);
-          alert(`✅ Đã import ${importedCards.length} thẻ từ JSON!`);
-        }
-      } catch (error) {
-        alert("❌ File JSON không hợp lệ!");
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  };
-
-  // Export CSV
-  const handleExportCSV = () => {
-    const filledCards = cards.filter((c) => c.front && c.back);
-    if (filledCards.length === 0) {
-      alert("⚠️ Chưa có thẻ nào để export!");
-      return;
-    }
-
-    const csv = filledCards
-      .map((card) => `${card.front},${card.back}`)
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${deckName || "flashcards"}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    alert(`📤 Đã export ${filledCards.length} thẻ sang CSV!`);
-  };
-
-  // Export JSON
-  const handleExportJSON = () => {
-    const filledCards = cards.filter((c) => c.front && c.back);
-    if (filledCards.length === 0) {
-      alert("⚠️ Chưa có thẻ nào để export!");
-      return;
-    }
-
-    const data = {
-      name: deckName,
-      description: deckDescription,
-      cards: filledCards,
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${deckName || "deck"}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    alert(`📤 Đã export ${filledCards.length} thẻ sang JSON!`);
-  };
-
-  const addCard = () => {
-    const newCard: Card = {
-      id: Date.now().toString(),
-      front: "",
-      back: "",
-    };
-    setCards([...cards, newCard]);
-  };
-
-  const deleteCard = (id: string) => {
-    if (cards.length > 1) {
-      setCards(cards.filter((card) => card.id !== id));
-    }
-  };
-
-  const updateCard = (id: string, field: "front" | "back", value: string) => {
-    setCards(
-      cards.map((card) => (card.id === id ? { ...card, [field]: value } : card))
-    );
-  };
-
-  const handleSave = async () => {
-    if (!deckName.trim()) {
-      alert("⚠️ Vui lòng nhập tên bộ thẻ!");
-      return;
-    }
-
-    const filledCards = cards.filter(
-      (card) => card.front.trim() && card.back.trim()
-    );
-
-    if (filledCards.length === 0) {
-      alert("⚠️ Vui lòng thêm ít nhất 1 thẻ có nội dung!");
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      // Step 1: Create the deck
-      const deckResponse = await deckApi.create({
-        title: deckName,
-        description: deckDescription || undefined,
-      });
-
-      // Check if the response data is valid
-      if (!deckResponse.data.data) {
-        throw new Error("Failed to create deck: Invalid response from server");
-      }
-
-      const newDeckId = deckResponse.data.data.id;
-      console.log("Deck created:", deckResponse.data.data);
-
-      // Step 2: Create cards for the deck
-      const cardCreationResults = await Promise.allSettled(
-        filledCards.map((card) =>
-          cardApi.create({
-            deckId: newDeckId,
-            front: card.front,
-            back: card.back,
-          })
-        )
-      );
-
-      // Count successful and failed card creations
-      const successfulCards = cardCreationResults.filter(
-        (result) => result.status === "fulfilled"
-      ).length;
-      const failedCards = cardCreationResults.filter(
-        (result) => result.status === "rejected"
-      ).length;
-
-      // Show appropriate message based on results
-      if (failedCards === 0) {
-        alert(
-          `🎉 Đã tạo bộ thẻ "${deckName}" với ${successfulCards} thẻ thành công!`
-        );
-        router.push("/dashboard");
-      } else if (successfulCards > 0) {
-        alert(
-          `⚠️ Đã tạo bộ thẻ "${deckName}" nhưng chỉ ${successfulCards}/${filledCards.length} thẻ được tạo thành công. ${failedCards} thẻ bị lỗi.`
-        );
-        router.push("/dashboard");
-      } else {
-        alert(
-          `❌ Đã tạo bộ thẻ "${deckName}" nhưng không thể tạo thẻ nào. Vui lòng thử lại sau.`
-        );
-        router.push("/dashboard");
-      }
-    } catch (error: any) {
-      console.error("Error creating deck:", error);
-
-      // Handle different error types
-      if (error.response) {
-        // Server responded with error status
-        const errorMessage = error.response.data?.message || "Lỗi từ server";
-        alert(`❌ Không thể tạo bộ thẻ: ${errorMessage}`);
-      } else if (error.request) {
-        // Request was made but no response
-        alert(
-          "❌ Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng."
-        );
-      } else {
-        // Something else happened
-        alert("❌ Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.");
-      }
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const {
+    deckName,
+    setDeckName,
+    deckDescription,
+    setDeckDescription,
+    cards,
+    isSaving,
+    handleImportCSV,
+    handleImportJSON,
+    handleExportCSV,
+    handleExportJSON,
+    addCard,
+    deleteCard,
+    updateCard,
+    handleSave,
+  } = useDeckForm();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -272,81 +44,12 @@ export default function CreateDeckPage() {
             </motion.button>
 
             <div className="flex items-center space-x-3">
-              {/* Import Dropdown */}
-              <div className="relative group">
-                <motion.button
-                  className="px-4 py-2 bg-white border-2 border-gray-200 rounded-xl font-medium text-gray-700 hover:border-blue-500 transition-all flex items-center space-x-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>Import</span>
-                </motion.button>
-
-                {/* Dropdown Menu */}
-                <div className="absolute top-full mt-2 left-0 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 w-48">
-                  <label className="block px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors">
-                    <input
-                      type="file"
-                      accept=".csv"
-                      onChange={handleImportCSV}
-                      className="hidden"
-                    />
-                    <div className="flex items-center space-x-2 text-gray-700">
-                      <span>📄</span>
-                      <span className="font-medium">Import CSV</span>
-                    </div>
-                  </label>
-
-                  <label className="block px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-t border-gray-100">
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={handleImportJSON}
-                      className="hidden"
-                    />
-                    <div className="flex items-center space-x-2 text-gray-700">
-                      <span>📋</span>
-                      <span className="font-medium">Import JSON</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Export Dropdown */}
-              <div className="relative group">
-                <motion.button
-                  className="px-4 py-2 bg-white border-2 border-gray-200 rounded-xl font-medium text-gray-700 hover:border-blue-500 transition-all flex items-center space-x-2"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Export</span>
-                </motion.button>
-
-                {/* Dropdown Menu */}
-                <div className="absolute top-full mt-2 left-0 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 w-48">
-                  <button
-                    onClick={handleExportCSV}
-                    className="w-full px-4 py-3 hover:bg-blue-50 transition-colors text-left"
-                  >
-                    <div className="flex items-center space-x-2 text-gray-700">
-                      <span>📄</span>
-                      <span className="font-medium">Export CSV</span>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={handleExportJSON}
-                    className="w-full px-4 py-3 hover:bg-blue-50 transition-colors border-t border-gray-100 text-left"
-                  >
-                    <div className="flex items-center space-x-2 text-gray-700">
-                      <span>📋</span>
-                      <span className="font-medium">Export JSON</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
+              <ImportExportMenu
+                handleImportCSV={handleImportCSV}
+                handleImportJSON={handleImportJSON}
+                handleExportCSV={handleExportCSV}
+                handleExportJSON={handleExportJSON}
+              />
 
               <motion.button
                 onClick={handleSave}
@@ -384,126 +87,19 @@ export default function CreateDeckPage() {
             </div>
           </div>
 
-          {/* Deck Info */}
-          <div className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100 shadow-lg">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tên bộ thẻ <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={deckName}
-                  onChange={(e) => setDeckName(e.target.value)}
-                  placeholder="VD: Từ vựng IELTS, Business English..."
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900 placeholder:text-gray-400 font-medium"
-                  style={{ color: "#111827" }}
-                />
-              </div>
+          <DeckInfoForm
+            deckName={deckName}
+            setDeckName={setDeckName}
+            deckDescription={deckDescription}
+            setDeckDescription={setDeckDescription}
+          />
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mô tả
-                </label>
-                <textarea
-                  value={deckDescription}
-                  onChange={(e) => setDeckDescription(e.target.value)}
-                  placeholder="Mô tả ngắn về bộ thẻ này..."
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none text-gray-900 placeholder:text-gray-400"
-                  style={{ color: "#111827" }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Cards List */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">
-                Flashcards ({cards.length})
-              </h2>
-
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <AlertCircle className="w-4 h-4" />
-                <span>Mặt trước: Tiếng Việt | Mặt sau: Tiếng Anh</span>
-              </div>
-            </div>
-
-            <AnimatePresence>
-              {cards.map((card, index) => (
-                <motion.div
-                  key={card.id}
-                  className="bg-white rounded-2xl p-6 border-2 border-gray-100 shadow-lg hover:shadow-xl transition-shadow"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold">
-                      {index + 1}
-                    </div>
-
-                    <div className="flex-1 grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          🇻🇳 Mặt trước (Tiếng Việt)
-                        </label>
-                        <input
-                          type="text"
-                          value={card.front}
-                          onChange={(e) =>
-                            updateCard(card.id, "front", e.target.value)
-                          }
-                          placeholder="VD: Xin chào"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900 placeholder:text-gray-400 font-medium"
-                          style={{ color: "#111827" }}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          🇬🇧 Mặt sau (Tiếng Anh)
-                        </label>
-                        <input
-                          type="text"
-                          value={card.back}
-                          onChange={(e) =>
-                            updateCard(card.id, "back", e.target.value)
-                          }
-                          placeholder="VD: Hello"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900 placeholder:text-gray-400 font-medium"
-                          style={{ color: "#111827" }}
-                        />
-                      </div>
-                    </div>
-
-                    <motion.button
-                      onClick={() => deleteCard(card.id)}
-                      disabled={cards.length === 1}
-                      className="flex-shrink-0 p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                      whileHover={{ scale: cards.length > 1 ? 1.1 : 1 }}
-                      whileTap={{ scale: cards.length > 1 ? 0.9 : 1 }}
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Add Card Button */}
-          <motion.button
-            onClick={addCard}
-            className="w-full py-4 border-2 border-dashed border-gray-300 rounded-2xl text-gray-600 font-semibold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Plus className="w-5 h-5" />
-            <span>Thêm thẻ mới</span>
-          </motion.button>
+          <CardList
+            cards={cards}
+            updateCard={updateCard}
+            deleteCard={deleteCard}
+            addCard={addCard}
+          />
 
           {/* Tips Section */}
           <motion.div

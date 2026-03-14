@@ -1,144 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  BookOpen,
-  Brain,
-  TrendingUp,
-  Clock,
-  Target,
-  Award,
-  Plus,
-  Play,
-  BarChart3,
-  Calendar,
-  Flame,
-  LogOut,
-  Settings,
-  User,
-  Search,
-} from "lucide-react";
+import { BookOpen, Plus, Play, LogOut, Settings, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { deckApi, DeckResponse } from "@/src/api/deckApi";
+import { useDashboardData } from "@/src/hooks/useDashboardData";
+import { DashboardHeader } from "@/src/components/dashboard/DashboardHeader";
+import { StatsGrid } from "@/src/components/dashboard/StatsGrid";
+import { DeckList } from "@/src/components/dashboard/DeckList";
+import { RecentActivity } from "@/src/components/dashboard/RecentActivity";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [decks, setDecks] = useState<any[]>([]);
-  const [isLoadingDecks, setIsLoadingDecks] = useState(true);
-  const [deckError, setDeckError] = useState<string | null>(null);
-
-  // Mock data
-  const userData = {
-    name: "Đức Hải",
-    username: "duchai1703",
-    email: "duchai1703@example.com",
-    avatar: "👨‍💻",
-    streak: 7,
-    totalCards: 156,
-    studiedToday: 23,
-    accuracy: 87,
-  };
-
-  // Fetch decks from API
-  useEffect(() => {
-    const fetchDecks = async () => {
-      try {
-        setIsLoadingDecks(true);
-        setDeckError(null);
-        const response = await deckApi.getAllForCurrentUser();
-
-        // Transform API data to match UI expectations
-        const transformedDecks = (response.data.data ?? []).map(
-          (deck: DeckResponse, index: number) => {
-            const totalCards = deck.cards?.length || 0;
-            // For now, we'll use placeholder values for studiedCards and dueCards
-            // These should come from the review data in a full implementation
-            const studiedCards = 0;
-            const dueCards = totalCards;
-
-            // Cycle through color schemes and emojis
-            const colorSchemes = [
-              "from-blue-500 to-cyan-500",
-              "from-purple-500 to-pink-500",
-              "from-orange-500 to-red-500",
-              "from-green-500 to-emerald-500",
-              "from-indigo-500 to-purple-500",
-              "from-pink-500 to-rose-500",
-            ];
-            const emojis = ["📘", "💼", "🎯", "✨", "📚", "🎓", "💡", "🚀"];
-
-            return {
-              id: deck.id,
-              name: deck.title,
-              description: deck.description || "No description",
-              totalCards,
-              studiedCards,
-              dueCards,
-              color: colorSchemes[index % colorSchemes.length],
-              emoji: emojis[index % emojis.length],
-            };
-          }
-        );
-
-        setDecks(transformedDecks);
-      } catch (error: any) {
-        console.error("Failed to fetch decks:", error);
-        setDeckError(
-          error.response?.data?.message ||
-            "Failed to load decks. Please try again."
-        );
-      } finally {
-        setIsLoadingDecks(false);
-      }
-    };
-
-    fetchDecks();
-  }, []);
-
-  const stats = [
-    {
-      icon: Brain,
-      label: "Tổng số thẻ",
-      value: userData.totalCards,
-      change: "+12 tuần này",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-50",
-    },
-    {
-      icon: Target,
-      label: "Đã học hôm nay",
-      value: userData.studiedToday,
-      change: "Mục tiêu: 50",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-50",
-    },
-    {
-      icon: TrendingUp,
-      label: "Độ chính xác",
-      value: `${userData.accuracy}%`,
-      change: "+3% so với tuần trước",
-      color: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-50",
-    },
-    {
-      icon: Flame,
-      label: "Chuỗi ngày học",
-      value: `${userData.streak} ngày`,
-      change: "Kỷ lục: 15 ngày",
-      color: "from-orange-500 to-red-500",
-      bgColor: "bg-orange-50",
-    },
-  ];
-
-  const recentActivity = [
-    { date: "2025-10-30", cards: 23, accuracy: 89, time: "15 phút" },
-    { date: "2025-10-29", cards: 35, accuracy: 85, time: "22 phút" },
-    { date: "2025-10-28", cards: 28, accuracy: 91, time: "18 phút" },
-    { date: "2025-10-27", cards: 42, accuracy: 83, time: "28 phút" },
-  ];
+  const {
+    searchQuery,
+    setSearchQuery,
+    decks,
+    isLoadingDecks,
+    deckError,
+    userData,
+    stats,
+    recentActivity,
+  } = useDashboardData();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -214,51 +97,14 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Welcome Section */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Chào mừng trở lại, {userData.name}! 👋
-          </h1>
-          <p className="text-lg text-gray-600">
-            Hôm nay là{" "}
-            <span className="font-semibold">Thứ Năm, 30 Tháng 10, 2025</span>.
-            Sẵn sàng học chưa?
-          </p>
-        </motion.div>
+        <DashboardHeader userName={userData.name} />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              className={`${stat.bgColor} rounded-2xl p-6 border-2 border-gray-100 hover:shadow-xl transition-all duration-300`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -5 }}
-            >
-              <div
-                className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-4`}
-              >
-                <stat.icon className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold text-gray-900 mb-2">
-                {stat.value}
-              </p>
-              <p className="text-xs text-gray-500">{stat.change}</p>
-            </motion.div>
-          ))}
-        </div>
+        <StatsGrid stats={stats} />
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <motion.button
-            onClick={() => router.push("/study")}
+            onClick={() => router.push("/deck")}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl font-semibold text-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3"
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
@@ -285,175 +131,20 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-bold text-gray-900">
                 Bộ thẻ của bạn
               </h2>
-              <button
-                onClick={() => router.push("/deck")}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-              >
-                Xem tất cả →
-              </button>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-6">
-              {isLoadingDecks ? (
-                // Loading state
-                <div className="col-span-2 text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                  <p className="mt-4 text-gray-600">Đang tải bộ thẻ...</p>
-                </div>
-              ) : deckError ? (
-                // Error state
-                <div className="col-span-2 text-center py-12">
-                  <div className="text-red-500 mb-4">⚠️</div>
-                  <p className="text-red-600 font-semibold">{deckError}</p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Thử lại
-                  </button>
-                </div>
-              ) : decks.length === 0 ? (
-                // Empty state
-                <div className="col-span-2 text-center py-12">
-                  <div className="text-gray-400 mb-4 text-5xl">📚</div>
-                  <p className="text-gray-600 font-semibold mb-2">
-                    Chưa có bộ thẻ nào
-                  </p>
-                  <p className="text-gray-500 text-sm mb-4">
-                    Tạo bộ thẻ đầu tiên của bạn để bắt đầu học!
-                  </p>
-                  <button
-                    onClick={() => router.push("/create-deck")}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Tạo bộ thẻ mới
-                  </button>
-                </div>
-              ) : (
-                // Deck cards
-                decks.map((deck, index) => (
-                  <motion.div
-                    key={deck.id}
-                    className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    onClick={() => router.push(`/study?deckId=${deck.id}`)}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div
-                        className={`w-14 h-14 bg-gradient-to-br ${deck.color} rounded-xl flex items-center justify-center text-3xl`}
-                      >
-                        {deck.emoji}
-                      </div>
-                      {deck.dueCards > 0 && (
-                        <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                          {deck.dueCards} cần học
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {deck.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {deck.description}
-                    </p>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Tiến độ</span>
-                        <span className="font-semibold text-gray-900">
-                          {deck.studiedCards}/{deck.totalCards}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full bg-gradient-to-r ${deck.color} transition-all duration-500`}
-                          style={{
-                            width: `${
-                              deck.totalCards > 0
-                                ? (deck.studiedCards / deck.totalCards) * 100
-                                : 0
-                            }%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
+            <DeckList
+              decks={decks}
+              isLoading={isLoadingDecks}
+              error={deckError}
+            />
           </div>
 
           {/* Recent Activity - Takes 1 column */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Hoạt động gần đây
-            </h2>
-
-            <motion.div
-              className="bg-white rounded-2xl p-6 border-2 border-gray-100 mb-6"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                  <Flame className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Chuỗi ngày học</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {userData.streak} ngày 🔥
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-500">
-                Hãy tiếp tục phấn đấu! Bạn đang làm rất tốt!
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="bg-white rounded-2xl p-6 border-2 border-gray-100"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center space-x-2">
-                <Calendar className="w-5 h-5" />
-                <span>7 ngày qua</span>
-              </h3>
-
-              <div className="space-y-3">
-                {recentActivity.map((activity, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {activity.cards} thẻ
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(activity.date).toLocaleDateString("vi-VN", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-green-600">
-                        {activity.accuracy}%
-                      </p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+          <RecentActivity
+            streak={userData.streak}
+            activities={recentActivity}
+          />
         </div>
       </main>
 

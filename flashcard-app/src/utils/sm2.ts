@@ -34,8 +34,8 @@ export const calculateSm2Intervals = (card: Sm2Input): Sm2Previews => {
     if (nextRep === 1) {
       // First review (New card)
       if (quality === 3) return 1; // Hard
-      if (quality === 4) return 3; // Good
-      if (quality === 5) return 5; // Easy
+      if (quality === 4) return 2; // Good
+      if (quality === 5) return 4; // Easy
     }
 
     if (nextRep === 2) {
