@@ -29,6 +29,12 @@ export interface SubmitReviewDto {
   reviewedAt: string;
 }
 
+export interface ConsecutiveDaysResponse {
+  consecutiveDays: number;
+  streakStartDate: string | null;
+  lastStudyDate: string | null;
+}
+
 export const studyApi = {
   // 5.1 Start Study Session
   startSession: (deckId: number) =>
@@ -37,4 +43,10 @@ export const studyApi = {
   // 5.2 Submit Card Review
   submitReview: (data: SubmitReviewDto) =>
     apiClient.post<ApiResponseDto<ReviewResponse[]>>("/study/review", data),
+
+  // 5.4 Get Consecutive Study Days
+  getConsecutiveDays: (deckId: number) =>
+    apiClient.get<ApiResponseDto<ConsecutiveDaysResponse>>(
+      `/study/consecutive-days/${deckId}`
+    ),
 };
