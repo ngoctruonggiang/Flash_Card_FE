@@ -77,12 +77,12 @@ export const CompletionScreen = ({
           </motion.button>
 
           <motion.button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.back()}
             className="w-full bg-white border-2 border-gray-200 text-gray-700 py-4 rounded-xl font-semibold hover:border-blue-500 hover:shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            Về Dashboard
+            Quay lại
           </motion.button>
         </div>
       </motion.div>

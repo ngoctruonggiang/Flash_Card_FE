@@ -144,7 +144,7 @@ export default function DeckDetailPage({
       try {
         await deckApi.remove(deck.id);
         alert(`🗑️ Đã xóa bộ thẻ "${deck.title}"`);
-        router.push("/dashboard");
+        router.back();
       } catch (err: any) {
         alert(`❌ Lỗi khi xóa bộ thẻ: ${err.message}`);
       }

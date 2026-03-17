@@ -207,17 +207,17 @@ export const useDeckForm = () => {
         alert(
           `🎉 Đã tạo bộ thẻ "${deckName}" với ${successfulCards} thẻ thành công!`
         );
-        router.push("/dashboard");
+        router.back();
       } else if (successfulCards > 0) {
         alert(
           `⚠️ Đã tạo bộ thẻ "${deckName}" nhưng chỉ ${successfulCards}/${filledCards.length} thẻ được tạo thành công. ${failedCards} thẻ bị lỗi.`
         );
-        router.push("/dashboard");
+        router.back();
       } else {
         alert(
           `❌ Đã tạo bộ thẻ "${deckName}" nhưng không thể tạo thẻ nào. Vui lòng thử lại sau.`
         );
-        router.push("/dashboard");
+        router.back();
       }
     } catch (error: any) {
       console.error("Error creating deck:", error);
