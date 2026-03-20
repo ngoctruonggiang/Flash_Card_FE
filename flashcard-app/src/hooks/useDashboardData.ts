@@ -37,7 +37,7 @@ export const useDashboardData = () => {
             const studiedCards = 0;
             const dueCards = totalCards;
 
-            // Cycle through color schemes and emojis
+            // Cycle through color schemes and emojis as fallback
             const colorSchemes = [
               "from-blue-500 to-cyan-500",
               "from-purple-500 to-pink-500",
@@ -48,6 +48,23 @@ export const useDashboardData = () => {
             ];
             const emojis = ["📘", "💼", "🎯", "✨", "📚", "🎓", "💡", "🚀"];
 
+            // Helper to get color class from hex code
+            const getColorClass = (hex?: string) => {
+              if (!hex) return colorSchemes[index % colorSchemes.length];
+              // Map hex codes to tailwind classes (simplified mapping)
+              const colorMap: Record<string, string> = {
+                "#3B82F6": "from-blue-500 to-cyan-500",
+                "#EF4444": "from-red-500 to-orange-500",
+                "#10B981": "from-green-500 to-emerald-500",
+                "#F59E0B": "from-yellow-500 to-orange-500",
+                "#8B5CF6": "from-purple-500 to-indigo-500",
+                "#EC4899": "from-pink-500 to-rose-500",
+                "#6366F1": "from-indigo-500 to-blue-500",
+                "#F97316": "from-orange-500 to-red-500",
+              };
+              return colorMap[hex] || colorSchemes[index % colorSchemes.length];
+            };
+
             return {
               id: deck.id,
               name: deck.title,
@@ -55,8 +72,9 @@ export const useDashboardData = () => {
               totalCards,
               studiedCards,
               dueCards,
-              color: colorSchemes[index % colorSchemes.length],
-              emoji: emojis[index % emojis.length],
+              color: getColorClass(deck.colorCode),
+              emoji: deck.iconName || emojis[index % emojis.length], // Pass iconName directly
+              iconName: deck.iconName, // Also pass as specific field
             };
           }
         );

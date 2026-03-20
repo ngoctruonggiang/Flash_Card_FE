@@ -7,12 +7,18 @@ export interface CreateCardDto {
   front: string;
   back: string;
   tags?: string;
+  wordType?: string;
+  pronunciation?: string;
+  examples?: { sentence: string; translation: string }[];
 }
 
 export interface UpdateCardDto {
   front?: string;
   back?: string;
   tags?: string;
+  wordType?: string;
+  pronunciation?: string;
+  examples?: { sentence: string; translation: string }[];
 }
 
 export interface CardResponse {
@@ -21,6 +27,9 @@ export interface CardResponse {
   front: string;
   back: string;
   tags: string | null;
+  wordType?: string;
+  pronunciation?: string;
+  examples?: { sentence: string; translation: string }[];
   createdAt?: string;
   updatedAt?: string;
   reviews?: any[]; // Array of review objects

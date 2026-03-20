@@ -35,12 +35,30 @@ export const useStudySession = () => {
       try {
         setIsLoading(true);
         const response = await studyApi.startSession(Number(deckId));
+        console.log("=== STUDY API RESPONSE ===", response.data.data);
+
         // Transform API data to match UI expectations if needed
         const fetchedCards = (response.data.data || []).map(
-          (card: CardResponse) => ({
-            ...card,
-            emoji: "📝", // Default emoji since API doesn't seem to return one
-          })
+          (card: CardResponse) => {
+            let parsedExamples = card.examples;
+
+            // Parse examples if it's a string (API might return JSON string)
+            if (typeof card.examples === "string") {
+              try {
+                parsedExamples = JSON.parse(card.examples);
+              } catch (e) {
+                console.error("Failed to parse examples for card", card.id, e);
+                parsedExamples = [];
+              }
+            }
+
+            console.log("Card data:", card.id, "Examples:", parsedExamples);
+            return {
+              ...card,
+              examples: parsedExamples,
+              emoji: "📝", // Default emoji since API doesn't seem to return one
+            };
+          }
         );
 
         setCards(fetchedCards);

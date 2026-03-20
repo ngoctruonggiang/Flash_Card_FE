@@ -78,8 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setIsLoading(false);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login API error:", error);
+      if (error.response) {
+        console.error("Error details:", error.response.data);
+      }
       setIsLoading(false);
       return false;
     }

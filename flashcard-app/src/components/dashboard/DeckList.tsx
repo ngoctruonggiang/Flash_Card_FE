@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { getDeckColorClass, getDeckIcon } from "@/src/constants/deck";
 
 interface Deck {
   id: string;
@@ -10,6 +11,7 @@ interface Deck {
   dueCards: number;
   color: string;
   emoji: string;
+  iconName?: string;
 }
 
 interface DeckListProps {
@@ -65,54 +67,69 @@ export const DeckList = ({ decks, isLoading, error }: DeckListProps) => {
 
   return (
     <div className="grid sm:grid-cols-2 gap-6">
-      {decks.map((deck, index) => (
-        <motion.div
-          key={deck.id}
-          className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 + index * 0.1 }}
-          whileHover={{ y: -5 }}
-          onClick={() => router.push(`/study?deckId=${deck.id}`)}
-        >
-          <div className="flex items-start justify-between mb-4">
+      {decks.map((deck, index) => {
+        const Icon = getDeckIcon(deck.iconName);
+        const colorClass = deck.color.startsWith("from-")
+          ? deck.color
+          : getDeckColorClass(deck.color);
+
+        return (
+          <motion.div
+            key={deck.id}
+            className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden group"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + index * 0.1 }}
+            whileHover={{ y: -5 }}
+            onClick={() => router.push(`/deck/${deck.id}`)}
+          >
             <div
-              className={`w-14 h-14 bg-gradient-to-br ${deck.color} rounded-xl flex items-center justify-center text-3xl`}
-            >
-              {deck.emoji}
-            </div>
-            {deck.dueCards > 0 && (
-              <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                {deck.dueCards} cần học
-              </span>
-            )}
-          </div>
+              className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-br ${colorClass} opacity-5 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110`}
+            />
 
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{deck.name}</h3>
-          <p className="text-sm text-gray-600 mb-4">{deck.description}</p>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Tiến độ</span>
-              <span className="font-semibold text-gray-900">
-                {deck.studiedCards}/{deck.totalCards}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className="flex items-start justify-between mb-4 relative z-10">
               <div
-                className={`h-full bg-gradient-to-r ${deck.color} transition-all duration-500`}
-                style={{
-                  width: `${
-                    deck.totalCards > 0
-                      ? (deck.studiedCards / deck.totalCards) * 100
-                      : 0
-                  }%`,
-                }}
-              ></div>
+                className={`w-14 h-14 bg-linear-to-br ${colorClass} rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}
+              >
+                <Icon className="w-7 h-7" />
+              </div>
+              {deck.dueCards > 0 && (
+                <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                  {deck.dueCards} cần học
+                </span>
+              )}
             </div>
-          </div>
-        </motion.div>
-      ))}
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2 relative z-10">
+              {deck.name}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4 relative z-10">
+              {deck.description}
+            </p>
+
+            <div className="space-y-2 relative z-10">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Tiến độ</span>
+                <span className="font-semibold text-gray-900">
+                  {deck.studiedCards}/{deck.totalCards}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className={`h-full bg-linear-to-r ${colorClass} transition-all duration-500`}
+                  style={{
+                    width: `${
+                      deck.totalCards > 0
+                        ? (deck.studiedCards / deck.totalCards) * 100
+                        : 0
+                    }%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 };

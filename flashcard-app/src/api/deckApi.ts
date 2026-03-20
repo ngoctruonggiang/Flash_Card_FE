@@ -4,11 +4,17 @@ import { ApiResponseDto, UserResponse } from "./userApi";
 export interface CreateDeckDto {
   title: string;
   description?: string;
+  iconName?: string;
+  colorCode?: string;
+  languageMode?: "VN_EN" | "EN_VN" | "BIDIRECTIONAL";
 }
 
 export interface UpdateDeckDto {
   title?: string;
   description?: string;
+  iconName?: string;
+  colorCode?: string;
+  languageMode?: "VN_EN" | "EN_VN" | "BIDIRECTIONAL";
 }
 
 export interface DeckResponse {
@@ -16,6 +22,9 @@ export interface DeckResponse {
   title: string;
   description: string | null;
   userId: number;
+  iconName?: string;
+  colorCode?: string;
+  languageMode?: "VN_EN" | "EN_VN" | "BIDIRECTIONAL";
   cards?: any[];
   user?: UserResponse; // Returned when getting deck by ID
   createdAt?: string;

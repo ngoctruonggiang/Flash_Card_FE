@@ -7,15 +7,24 @@ export interface Card {
   id: string;
   front: string;
   back: string;
+  wordType?: string;
+  pronunciation?: string;
+  examples?: { id: string; sentence: string; translation: string }[];
 }
 
 export const useDeckForm = () => {
   const router = useRouter();
   const [deckName, setDeckName] = useState("");
   const [deckDescription, setDeckDescription] = useState("");
+  const [iconName, setIconName] = useState("book");
+  const [colorCode, setColorCode] = useState("#3B82F6");
+  const [languageMode, setLanguageMode] = useState<
+    "VN_EN" | "EN_VN" | "BIDIRECTIONAL"
+  >("VN_EN");
+
   const [cards, setCards] = useState<Card[]>([
-    { id: "1", front: "", back: "" },
-    { id: "2", front: "", back: "" },
+    { id: "1", front: "", back: "", examples: [] },
+    { id: "2", front: "", back: "", examples: [] },
   ]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -135,6 +144,7 @@ export const useDeckForm = () => {
       id: Date.now().toString(),
       front: "",
       back: "",
+      examples: [],
     };
     setCards([...cards, newCard]);
   };
@@ -145,7 +155,7 @@ export const useDeckForm = () => {
     }
   };
 
-  const updateCard = (id: string, field: "front" | "back", value: string) => {
+  const updateCard = (id: string, field: keyof Card, value: any) => {
     setCards(
       cards.map((card) => (card.id === id ? { ...card, [field]: value } : card))
     );
@@ -173,6 +183,9 @@ export const useDeckForm = () => {
       const deckResponse = await deckApi.create({
         title: deckName,
         description: deckDescription || undefined,
+        iconName,
+        colorCode,
+        languageMode,
       });
 
       // Check if the response data is valid
@@ -190,6 +203,12 @@ export const useDeckForm = () => {
             deckId: newDeckId,
             front: card.front,
             back: card.back,
+            wordType: card.wordType,
+            pronunciation: card.pronunciation,
+            examples: card.examples?.map((ex) => ({
+              sentence: ex.sentence,
+              translation: ex.translation,
+            })),
           })
         )
       );
@@ -246,6 +265,12 @@ export const useDeckForm = () => {
     setDeckName,
     deckDescription,
     setDeckDescription,
+    iconName,
+    setIconName,
+    colorCode,
+    setColorCode,
+    languageMode,
+    setLanguageMode,
     cards,
     isSaving,
     handleImportCSV,

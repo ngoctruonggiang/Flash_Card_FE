@@ -23,6 +23,8 @@ import { deckApi } from "@/src/api/deckApi";
 import { cardApi, type CardResponse } from "@/src/api/cardApi";
 import { studyApi } from "@/src/api/studyApi";
 
+import { getDeckColorClass, getDeckIcon } from "@/src/constants/deck";
+
 interface DeckData {
   id: number;
   title: string;
@@ -36,6 +38,7 @@ interface DeckData {
   streak: number;
   emoji: string;
   color: string;
+  iconName?: string;
 }
 
 export default function DeckDetailPage({
@@ -105,8 +108,9 @@ export default function DeckDetailPage({
           lastStudied: lastStudied,
           created: deckData.createdAt || new Date().toISOString(),
           streak: streak,
-          emoji: "📚", // Default emoji - will be customizable in future
-          color: "from-blue-500 to-cyan-500", // Default color - will be customizable in future
+          emoji: "📚", // Fallback
+          color: getDeckColorClass(deckData.colorCode),
+          iconName: deckData.iconName,
         });
 
         setCards(cardsData);
@@ -208,6 +212,8 @@ export default function DeckDetailPage({
     );
   }
 
+  const Icon = getDeckIcon(deck.iconName);
+
   const stats = [
     {
       icon: BookOpen,
@@ -287,9 +293,9 @@ export default function DeckDetailPage({
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div
-                className={`w-16 h-16 bg-gradient-to-br ${deck.color} rounded-2xl flex items-center justify-center text-4xl shadow-lg`}
+                className={`w-16 h-16 bg-gradient-to-br ${deck.color} rounded-2xl flex items-center justify-center text-white shadow-lg`}
               >
-                {deck.emoji}
+                <Icon className="w-8 h-8" />
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
