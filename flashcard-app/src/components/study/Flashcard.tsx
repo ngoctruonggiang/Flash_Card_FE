@@ -12,6 +12,19 @@ export const Flashcard = ({
   isFlipped,
   setIsFlipped,
 }: FlashcardProps) => {
+  // Helper to detect Vietnamese text (contains specific Vietnamese characters)
+  const isVietnamese = (text: string) => {
+    if (!text) return false;
+    const vietnameseRegex =
+      /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+    return vietnameseRegex.test(text);
+  };
+
+  // Determine if the front is English (Front is NOT Vietnamese AND Back IS Vietnamese)
+  // This covers the case where Front is English and Back is Vietnamese
+  const isFrontEnglish =
+    !isVietnamese(currentCard.front) && isVietnamese(currentCard.back);
+
   return (
     <div className="w-full max-w-2xl mb-8" style={{ perspective: "1000px" }}>
       <AnimatePresence mode="wait">
@@ -43,6 +56,9 @@ export const Flashcard = ({
                     {currentCard.wordType}
                   </span>
                 )}
+
+                {/* Show details on Front if it's English - REMOVED as per requirement */}
+                {/* User wants ONLY word and word type on front, regardless of language */}
               </div>
 
               <p className="text-gray-500 text-sm uppercase tracking-wider font-medium mt-4">
@@ -79,6 +95,7 @@ export const Flashcard = ({
                       {currentCard.wordType}
                     </span>
                   )}
+                  {/* Show pronunciation on Back ALWAYS if it exists */}
                   {currentCard.pronunciation && (
                     <span className="text-gray-400 font-mono text-lg">
                       {currentCard.pronunciation}
@@ -87,6 +104,7 @@ export const Flashcard = ({
                 </div>
               </div>
 
+              {/* Show examples on Back ALWAYS if they exist */}
               {currentCard.examples &&
                 Array.isArray(currentCard.examples) &&
                 currentCard.examples.length > 0 && (

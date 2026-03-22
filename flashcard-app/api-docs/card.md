@@ -95,25 +95,33 @@ If the deck has languageMode set to BIDIRECTIONAL, creating a card will automati
 }
 ```
 
-**Auto-Generated Reverse Card:**
+**Auto-Generated Reverse Card (now includes rich content):**
 
 ```json
 {
   "id": 2,
   "front": "hello",
   "back": "xin chào",
-  "wordType": null,
-  "pronunciation": null,
-  "examples": null
+  "wordType": "interjection",
+  "pronunciation": "həˈləʊ",
+  "examples": [
+    {
+      "sentence": "Hello, how are you?",
+      "translation": "Xin chào, bạn khỏe không?"
+    },
+    {
+      "sentence": "Hello everyone!",
+      "translation": "Xin chào mọi người!"
+    }
+  ]
 }
 ```
 
 **Notes:**
 
-- Rich content fields (wordType, pronunciation, examples) are only stored on the primary card
-- The reverse card contains only the swapped front/back text to avoid giving away the answer
+- Rich content fields (wordType, pronunciation, examples) are now duplicated on the reverse card for BIDIRECTIONAL decks
 - This automatic creation only happens when languageMode is BIDIRECTIONAL
-- Both cards will be created in a single API call
+- Both cards are created in a single API call
 
 ### **4.2 Get Cards**
 
@@ -174,59 +182,36 @@ Retrieve a specific card by its ID.
 ```json
 {
   "statusCode": 200,
-  "timestamp": "2025-11-25T04:17:11.932Z",
+  "timestamp": "2025-11-23T13:44:29.081Z",
   "message": "Get All Cards",
   "data": {
-    "id": 236,
-    "deckId": 233,
-    "front": "Mặt trước",
-    "back": "Front side",
-    "createdAt": "2025-11-24T15:43:39.425Z",
-    "updatedAt": "2025-11-24T15:43:39.425Z",
-    "tags": null,
-    "wordType": "noun",
-    "pronunciation": "front",
-    "examples": [
-      {
-        "sentence": "this is the front-side of the card",
-        "translation": "đây là mặt trước của thẻ"
-      }
-    ],
+    "id": 1,
+    "deckId": 3,
+    "front": "What is 2+2?",
+    "back": "4",
+    "createdAt": "2025-11-23T13:44:29.060Z",
+    "updatedAt": "2025-11-23T13:44:29.060Z",
+    "tags": "math,basics",
     "deck": {
-      "id": 233,
-      "userId": 38,
-      "title": "IELTS",
-      "description": null,
-      "iconName": "book",
-      "colorCode": "#3B82F6",
-      "languageMode": "BIDIRECTIONAL",
-      "createdAt": "2025-11-24T15:43:39.412Z",
-      "updatedAt": "2025-11-24T15:43:39.412Z",
+      "id": 3,
+      "userId": 7,
+      "title": "Advanced Math",
+      "description": "Complex arithmetic flashcards",
+      "createdAt": "2025-11-23T13:44:28.992Z",
+      "updatedAt": "2025-11-23T13:44:29.047Z",
       "user": {
-        "id": 38,
-        "username": "danhUIT",
-        "email": "danhUIT@gmail.com",
+        "id": 7,
+        "username": "test",
+        "email": "test@gmail.com",
         "role": "USER",
-        "passwordHash": "$2b$10$UITL.Mo/5pXSqh1u.PEZpuvnS0WW99/fzxVC13FQKXW.YlGImQ3c6",
-        "createdAt": "2025-11-24T15:40:38.232Z",
-        "lastLoginAt": "2025-11-24T15:40:38.230Z",
+        "createdAt": "2025-11-23T13:44:28.843Z",
+        "lastLoginAt": "2025-11-23T13:44:28.841Z",
         "isEmailConfirmed": false
       }
     },
-    "reviews": [
-      {
-        "id": 110,
-        "cardId": 236,
-        "repetitions": 0,
-        "interval": 1,
-        "eFactor": 2.5,
-        "nextReviewDate": "2025-11-25T15:59:23.641Z",
-        "reviewedAt": "2025-11-25T15:59:23.641Z",
-        "quality": "Again"
-      }
-    ]
+    "reviews": []
   },
-  "path": "/api/card/236"
+  "path": "/api/card/1"
 }
 ```
 
