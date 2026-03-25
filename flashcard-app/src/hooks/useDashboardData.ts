@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { deckApi, DeckResponse } from "@/src/api/deckApi";
+import apiClient from "../axios/axios";
+import { DeckResponse, ApiResponseDto } from "@/src/types/dto";
 import { Brain, Target, TrendingUp, Flame } from "lucide-react";
 
 export const useDashboardData = () => {
@@ -26,7 +27,9 @@ export const useDashboardData = () => {
       try {
         setIsLoadingDecks(true);
         setDeckError(null);
-        const response = await deckApi.getAllForCurrentUser();
+        const response = await apiClient.get<ApiResponseDto<DeckResponse[]>>(
+          "/deck"
+        );
 
         // Transform API data to match UI expectations
         const transformedDecks = (response.data.data ?? []).map(

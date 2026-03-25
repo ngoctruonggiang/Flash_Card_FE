@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deckApi } from "@/src/api/deckApi";
-import { cardApi } from "@/src/api/cardApi";
+import apiClient from "../axios/axios";
+import {
+  CreateDeckDto,
+  DeckResponse,
+  CreateCardDto,
+  CardResponse,
+  ApiResponseDto,
+} from "@/src/types/dto";
 
 export interface Card {
   id: string;
@@ -180,13 +186,18 @@ export const useDeckForm = () => {
 
     try {
       // Step 1: Create the deck
-      const deckResponse = await deckApi.create({
+      const deckData: CreateDeckDto = {
         title: deckName,
         description: deckDescription || undefined,
         iconName,
         colorCode,
         languageMode,
-      });
+      };
+
+      const deckResponse = await apiClient.post<ApiResponseDto<DeckResponse>>(
+        "/deck",
+        deckData
+      );
 
       // Check if the response data is valid
       if (!deckResponse.data.data) {
@@ -198,8 +209,8 @@ export const useDeckForm = () => {
 
       // Step 2: Create cards for the deck
       const cardCreationResults = await Promise.allSettled(
-        filledCards.map((card) =>
-          cardApi.create({
+        filledCards.map((card) => {
+          const cardData: CreateCardDto = {
             deckId: newDeckId,
             front: card.front,
             back: card.back,
@@ -209,8 +220,13 @@ export const useDeckForm = () => {
               sentence: ex.sentence,
               translation: ex.translation,
             })),
-          })
-        )
+          };
+
+          return apiClient.post<ApiResponseDto<CardResponse>>(
+            "/card",
+            cardData
+          );
+        })
       );
 
       // Count successful and failed card creations

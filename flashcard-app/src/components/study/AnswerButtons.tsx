@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle } from "lucide-react";
-import { Sm2Previews } from "@/src/utils/sm2";
+import { Sm2Previews } from "@/src/types/dto";
 
 interface AnswerButtonsProps {
   handleAnswer: (difficulty: "again" | "hard" | "good" | "easy") => void;

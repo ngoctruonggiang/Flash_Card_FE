@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { studyApi, CardReview } from "@/src/api/studyApi";
-import { CardResponse } from "@/src/api/cardApi";
-import { calculateSm2Intervals, Sm2Previews } from "@/src/utils/sm2";
+import apiClient from "../axios/axios";
+import {
+  CardReview,
+  Sm2Previews,
+  CardResponse,
+  ApiResponseDto,
+  ReviewResponse,
+  SubmitReviewDto,
+} from "@/src/types/dto";
 
 export const useStudySession = () => {
   const searchParams = useSearchParams();
@@ -34,7 +40,9 @@ export const useStudySession = () => {
 
       try {
         setIsLoading(true);
-        const response = await studyApi.startSession(Number(deckId));
+        const response = await apiClient.get<ApiResponseDto<CardResponse[]>>(
+          `/study/start/${deckId}`
+        );
         console.log("=== STUDY API RESPONSE ===", response.data.data);
 
         // Transform API data to match UI expectations if needed
@@ -74,13 +82,25 @@ export const useStudySession = () => {
   }, [deckId]);
 
   // Calculate previews when card is flipped
+  // Calculate previews when card is flipped
   useEffect(() => {
-    if (isFlipped && cards[currentCardIndex]) {
-      const previews = calculateSm2Intervals(cards[currentCardIndex]);
-      setIntervalPreviews(previews);
-    } else {
-      setIntervalPreviews(null);
-    }
+    const fetchPreviews = async () => {
+      if (isFlipped && cards[currentCardIndex]) {
+        try {
+          const response = await apiClient.get<ApiResponseDto<Sm2Previews>>(
+            `/study/preview/${cards[currentCardIndex].id}`
+          );
+          setIntervalPreviews(response.data.data);
+        } catch (error) {
+          console.error("Failed to fetch previews:", error);
+          setIntervalPreviews(null);
+        }
+      } else {
+        setIntervalPreviews(null);
+      }
+    };
+
+    fetchPreviews();
   }, [isFlipped, currentCardIndex, cards]);
 
   const currentCard = cards[currentCardIndex];
@@ -131,10 +151,14 @@ export const useStudySession = () => {
       } else {
         // Submit all reviews
         try {
-          await studyApi.submitReview({
+          const submitData: SubmitReviewDto = {
             CardReviews: updatedReviews,
             reviewedAt: new Date().toISOString(),
-          });
+          };
+          await apiClient.post<ApiResponseDto<ReviewResponse[]>>(
+            "/study/review",
+            submitData
+          );
           setIsCompleted(true);
         } catch (err) {
           console.error("Failed to submit reviews:", err);

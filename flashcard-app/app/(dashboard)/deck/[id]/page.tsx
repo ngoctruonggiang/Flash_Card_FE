@@ -19,9 +19,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { deckApi } from "@/src/api/deckApi";
-import { cardApi, type CardResponse } from "@/src/api/cardApi";
-import { studyApi } from "@/src/api/studyApi";
+import apiClient from "@/src/axios/axios";
+import type { CardResponse } from "@/src/types/dto";
 
 import { getDeckColorClass, getDeckIcon } from "@/src/constants/deck";
 
@@ -74,13 +73,13 @@ export default function DeckDetailPage({
           lastStudiedResponse,
           streakResponse,
         ] = await Promise.all([
-          deckApi.findOne(deckId),
-          cardApi.findAll(deckId),
-          deckApi.getReviewedCountDay(deckId), // Today's reviewed count
-          deckApi.getDueToday(deckId),
-          deckApi.getStatistics(deckId),
-          deckApi.getLastStudied(deckId),
-          studyApi.getConsecutiveDays(deckId),
+          apiClient.get(`/deck/${deckId}`),
+          apiClient.get(`/card`, { params: { deckId } }),
+          apiClient.get(`/deck/${deckId}/reviewed-count-day`), // Today's reviewed count
+          apiClient.get(`/deck/${deckId}/due-today`),
+          apiClient.get(`/deck/${deckId}/statistics`),
+          apiClient.get(`/deck/${deckId}/last-studied`),
+          apiClient.get(`/study/consecutive-days/${deckId}`),
         ]);
 
         if (!deckResponse.data.data) {
@@ -146,7 +145,7 @@ export default function DeckDetailPage({
       )
     ) {
       try {
-        await deckApi.remove(deck.id);
+        await apiClient.delete(`/deck/${deck.id}`);
         alert(`🗑️ Đã xóa bộ thẻ "${deck.title}"`);
         router.back();
       } catch (err: any) {

@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { userApi } from "@/src/api/userApi";
+import apiClient from "@/src/axios/axios";
 
 interface User {
   id: string;
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = (
-        await userApi.signIn({
+        await apiClient.post("/auth/login", {
           email: email,
           password: password,
         })
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = (
-        await userApi.signUp({
+        await apiClient.post("/auth/register", {
           username: username,
           email: email,
           password: password,
