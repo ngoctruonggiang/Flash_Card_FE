@@ -169,6 +169,8 @@ export interface ReviewResponse {
   interval: number;
   eFactor: number;
   nextReviewDate: string;
+  previousStatus?: string;
+  newStatus?: string;
 }
 
 export interface CardReview {

@@ -28,6 +28,8 @@ function StudyContent() {
     isCompleted,
     correctCards,
     restartSession,
+    initialCardCount,
+    completedCount,
   } = useStudySession();
 
   // Completion screen
@@ -58,8 +60,8 @@ function StudyContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <StudyHeader
         elapsedTime={elapsedTime}
-        currentCardIndex={currentCardIndex}
-        totalCards={cards.length}
+        currentCardIndex={completedCount}
+        totalCards={initialCardCount}
         progress={progress}
       />
 
