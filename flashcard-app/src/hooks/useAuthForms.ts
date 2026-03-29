@@ -18,12 +18,11 @@ export const useLoginForm = () => {
     setError("");
     setIsLoading(true);
 
-    const success = await login(formData.email, formData.password);
-
-    if (success) {
+    const result = await login(formData.email, formData.password);
+    if (result.success) {
       router.push("/dashboard");
     } else {
-      setError("❌ Email hoặc mật khẩu không đúng!");
+      setError(result.error || "❌ Email hoặc mật khẩu không đúng!");
       setIsLoading(false);
     }
   };
@@ -63,17 +62,17 @@ export const useRegisterForm = () => {
 
     setIsLoading(true);
 
-    const success = await register(
+    const result = await register(
       formData.username,
       formData.email,
       formData.password,
       formData.confirmPassword
     );
 
-    if (success) {
+    if (result.success) {
       router.push("/dashboard");
     } else {
-      alert("❌ Tài khoản đã tồn tại hay cái gì đấy!");
+      setError(result.error || "❌ Đăng ký thất bại!");
       setIsLoading(false);
     }
   };

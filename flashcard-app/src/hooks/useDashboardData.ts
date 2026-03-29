@@ -9,17 +9,35 @@ export const useDashboardData = () => {
   const [isLoadingDecks, setIsLoadingDecks] = useState(true);
   const [deckError, setDeckError] = useState<string | null>(null);
 
-  // Mock data
-  const userData = {
-    name: "Đức Hải",
-    username: "duchai1703",
-    email: "duchai1703@example.com",
+  const [userData, setUserData] = useState({
+    name: "Loading...",
+    username: "loading",
+    email: "loading...",
     avatar: "👨‍💻",
-    streak: 7,
-    totalCards: 156,
-    studiedToday: 23,
-    accuracy: 87,
-  };
+    streak: 0,
+    totalCards: 0,
+    studiedToday: 0,
+    accuracy: 0,
+  });
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<ApiResponseDto<any>>("/user");
+        const user = response.data.data;
+        setUserData((prev) => ({
+          ...prev,
+          name: user.username, // API doesn't have name, use username
+          username: user.username,
+          email: user.email,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Fetch decks from API
   useEffect(() => {
@@ -31,10 +49,14 @@ export const useDashboardData = () => {
           "/deck"
         );
 
+        let totalCardsCount = 0;
+
         // Transform API data to match UI expectations
         const transformedDecks = (response.data.data ?? []).map(
           (deck: DeckResponse, index: number) => {
             const totalCards = deck.cards?.length || 0;
+            totalCardsCount += totalCards;
+
             // For now, we'll use placeholder values for studiedCards and dueCards
             // These should come from the review data in a full implementation
             const studiedCards = 0;
@@ -83,6 +105,7 @@ export const useDashboardData = () => {
         );
 
         setDecks(transformedDecks);
+        setUserData((prev) => ({ ...prev, totalCards: totalCardsCount }));
       } catch (error: any) {
         console.error("Failed to fetch decks:", error);
         setDeckError(
