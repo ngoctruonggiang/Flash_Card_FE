@@ -57,10 +57,14 @@ export const useDashboardData = () => {
             const totalCards = deck.cards?.length || 0;
             totalCardsCount += totalCards;
 
-            // For now, we'll use placeholder values for studiedCards and dueCards
-            // These should come from the review data in a full implementation
-            const studiedCards = 0;
-            const dueCards = totalCards;
+            // Calculate due cards
+            const now = new Date();
+            const dueCards = (deck.cards || []).filter((card) => {
+              if (!card.nextReviewDate) return true; // New cards are due
+              return new Date(card.nextReviewDate) <= now; // Due if review date is in the past or today
+            }).length;
+
+            const studiedCards = 0; // Placeholder as we are removing the progress bar
 
             // Cycle through color schemes and emojis as fallback
             const colorSchemes = [

@@ -108,24 +108,7 @@ export const DeckList = ({ decks, isLoading, error }: DeckListProps) => {
             </p>
 
             <div className="space-y-2 relative z-10">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Tiến độ</span>
-                <span className="font-semibold text-gray-900">
-                  {deck.studiedCards}/{deck.totalCards}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-full bg-linear-to-r ${colorClass} transition-all duration-500`}
-                  style={{
-                    width: `${
-                      deck.totalCards > 0
-                        ? (deck.studiedCards / deck.totalCards) * 100
-                        : 0
-                    }%`,
-                  }}
-                ></div>
-              </div>
+              {/* Progress bar removed as requested */}
             </div>
           </motion.div>
         );
