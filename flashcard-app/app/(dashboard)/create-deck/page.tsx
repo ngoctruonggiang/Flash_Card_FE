@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowLeft, Save, Sparkles, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -8,7 +9,7 @@ import { DeckInfoForm } from "@/src/components/create-deck/DeckInfoForm";
 import { CardList } from "@/src/components/create-deck/CardList";
 import { ImportExportMenu } from "@/src/components/create-deck/ImportExportMenu";
 
-export default function CreateDeckPage() {
+function CreateDeckContent() {
   const router = useRouter();
   const {
     deckName,
@@ -151,5 +152,22 @@ export default function CreateDeckPage() {
         </motion.div>
       </main>
     </div>
+  );
+}
+
+export default function CreateDeckPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-lg text-gray-600">Đang tải...</p>
+          </div>
+        </div>
+      }
+    >
+      <CreateDeckContent />
+    </Suspense>
   );
 }

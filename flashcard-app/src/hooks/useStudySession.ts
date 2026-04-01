@@ -26,8 +26,6 @@ export const useStudySession = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [studiedCards, setStudiedCards] = useState(0);
   const [correctCards, setCorrectCards] = useState(0);
-  const [startTime] = useState(Date.now());
-  const [elapsedTime, setElapsedTime] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
 
   const [initialCardCount, setInitialCardCount] = useState(0);
@@ -110,14 +108,6 @@ export const useStudySession = () => {
   const currentCard = cards[currentCardIndex];
   const progress =
     initialCardCount > 0 ? (completedCount / initialCardCount) * 100 : 0;
-
-  // Timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [startTime]);
 
   // Handle answer
   const handleAnswer = async (
@@ -209,7 +199,6 @@ export const useStudySession = () => {
     isFlipped,
     setIsFlipped,
     progress,
-    elapsedTime,
     intervalPreviews,
     handleAnswer,
     isCompleted,

@@ -5,25 +5,16 @@ import { useRouter } from "next/navigation";
 interface CompletionScreenProps {
   correctCards: number;
   totalCards: number;
-  elapsedTime: number;
   restartSession: () => void;
 }
 
 export const CompletionScreen = ({
   correctCards,
   totalCards,
-  elapsedTime,
   restartSession,
 }: CompletionScreenProps) => {
   const router = useRouter();
   const accuracy = Math.round((correctCards / totalCards) * 100);
-
-  // Format time
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -42,7 +33,7 @@ export const CompletionScreen = ({
           Bạn đã hoàn thành phiên học này!
         </p>
 
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="bg-blue-50 rounded-2xl p-6">
             <div className="text-3xl font-bold text-blue-600 mb-2">
               {totalCards}
@@ -55,13 +46,6 @@ export const CompletionScreen = ({
               {accuracy}%
             </div>
             <div className="text-sm text-gray-600">Độ chính xác</div>
-          </div>
-
-          <div className="bg-purple-50 rounded-2xl p-6">
-            <div className="text-3xl font-bold text-purple-600 mb-2">
-              {formatTime(elapsedTime)}
-            </div>
-            <div className="text-sm text-gray-600">Thời gian</div>
           </div>
         </div>
 
