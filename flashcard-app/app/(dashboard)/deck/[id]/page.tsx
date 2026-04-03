@@ -427,36 +427,95 @@ export default function DeckDetailPage({
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredCards.map((card, index) => (
-                <motion.div
-                  key={card.id}
-                  className="p-4 border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  whileHover={{ x: 5 }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className="text-lg font-bold text-gray-900">
-                          {card.front}
-                        </span>
-                        <span className="text-gray-400">→</span>
-                        <span className="text-lg text-gray-600">
-                          {card.back}
-                        </span>
-                      </div>
-                      {card.tags && (
-                        <div className="flex items-center space-x-2 text-sm">
-                          <span className="text-gray-500">Tags:</span>
-                          <span className="text-blue-600">{card.tags}</span>
+              {filteredCards.map((card, index) => {
+                const examples =
+                  typeof card.examples === "string"
+                    ? JSON.parse(card.examples)
+                    : card.examples;
+                const hasExamples =
+                  Array.isArray(examples) && examples.length > 0;
+
+                return (
+                  <motion.div
+                    key={card.id}
+                    className="p-4 border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ x: 5 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-1">
+                          <span className="text-lg font-bold text-gray-900">
+                            {card.front}
+                          </span>
+                          <span className="text-gray-400">→</span>
+                          <span className="text-lg text-gray-600">
+                            {card.back}
+                          </span>
                         </div>
-                      )}
+
+                        {card.pronunciation && (
+                          <div className="mb-2">
+                            <span className="text-sm text-gray-500 font-mono">
+                              {card.pronunciation}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          {card.wordType && (
+                            <div className="flex items-center space-x-2 text-sm">
+                              <span className="text-gray-500">Loại từ:</span>
+                              <span className="text-gray-700 font-medium bg-gray-100 px-2 py-0.5 rounded">
+                                {card.wordType}
+                              </span>
+                            </div>
+                          )}
+
+                          {card.tags && (
+                            <div className="flex items-center space-x-2 text-sm">
+                              <span className="text-gray-500">Tags:</span>
+                              <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                {card.tags}
+                              </span>
+                            </div>
+                          )}
+
+                          {hasExamples && (
+                            <div className="mt-3 bg-gray-50 p-3 rounded-lg">
+                              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">
+                                Ví dụ
+                              </span>
+                              <div className="space-y-2">
+                                {examples.map(
+                                  (
+                                    ex: {
+                                      sentence: string;
+                                      translation: string;
+                                    },
+                                    i: number
+                                  ) => (
+                                    <div key={i} className="text-sm">
+                                      <p className="text-gray-900">
+                                        {ex.sentence}
+                                      </p>
+                                      <p className="text-gray-500 italic">
+                                        {ex.translation}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
