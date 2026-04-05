@@ -40,6 +40,8 @@ interface DeckData {
   iconName?: string;
 }
 
+import { StudyModal } from "@/src/components/study/StudyModal";
+
 export default function DeckDetailPage({
   params,
 }: {
@@ -49,6 +51,7 @@ export default function DeckDetailPage({
   const resolvedParams = use(params);
 
   const router = useRouter();
+  const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -331,7 +334,7 @@ export default function DeckDetailPage({
             </div>
 
             <motion.button
-              onClick={() => router.push(`/study?deckId=${deck.id}`)}
+              onClick={() => setIsStudyModalOpen(true)}
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all flex items-center space-x-2"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -341,6 +344,12 @@ export default function DeckDetailPage({
             </motion.button>
           </div>
         </motion.div>
+
+        <StudyModal
+          isOpen={isStudyModalOpen}
+          onClose={() => setIsStudyModalOpen(false)}
+          deckId={deck.id}
+        />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
