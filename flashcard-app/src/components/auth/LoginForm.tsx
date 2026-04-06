@@ -48,13 +48,14 @@ export const LoginForm = () => {
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="email"
+              autoComplete="email"
               required
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-              placeholder="duchai1703@gmail.com"
+              placeholder="email@example.com"
             />
           </div>
         </div>
@@ -68,6 +69,7 @@ export const LoginForm = () => {
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               required
               value={formData.password}
               onChange={(e) =>

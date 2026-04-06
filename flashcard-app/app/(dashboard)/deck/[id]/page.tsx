@@ -163,7 +163,14 @@ export default function DeckDetailPage({
     const data = {
       name: deck.title,
       description: deck.description,
-      cards: cards.map((c) => ({ front: c.front, back: c.back })),
+      cards: cards.map((c) => ({
+        front: c.front,
+        back: c.back,
+        tags: c.tags,
+        wordType: c.wordType,
+        pronunciation: c.pronunciation,
+        examples: c.examples,
+      })),
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {

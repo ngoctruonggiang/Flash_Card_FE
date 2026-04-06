@@ -131,7 +131,7 @@ export const HeroSection = ({
                 className="relative w-full max-w-sm"
                 style={{ perspective: "1000px" }}
               >
-                <AnimatePresence mode="wait">
+                <AnimatePresence>
                   {flashcards.map((card, index) => {
                     const offset = index - currentCard;
                     const absOffset = Math.abs(offset);

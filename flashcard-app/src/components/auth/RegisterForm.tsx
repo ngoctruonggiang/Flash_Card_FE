@@ -78,7 +78,7 @@ export const RegisterForm = () => {
                 setFormData({ ...formData, username: e.target.value })
               }
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-              placeholder="duchai1703"
+              placeholder="username"
             />
           </div>
         </div>
@@ -93,12 +93,13 @@ export const RegisterForm = () => {
             <input
               type="email"
               required
+              autoComplete="email"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-              placeholder="duchai1703@example.com"
+              placeholder="email@example.com"
             />
           </div>
         </div>
