@@ -144,6 +144,16 @@ export const useDeckForm = () => {
             id: Date.now().toString() + index,
             front: card.front || "",
             back: card.back || "",
+            tags: card.tags || null,
+            wordType: card.wordType || undefined,
+            pronunciation: card.pronunciation || undefined,
+            examples: Array.isArray(card.examples)
+              ? card.examples.map((ex: any, idx: number) => ({
+                  id: Date.now().toString() + idx,
+                  sentence: ex.sentence || "",
+                  translation: ex.translation || "",
+                }))
+              : [],
           }));
           setCards(importedCards);
           alert(`✅ Đã import ${importedCards.length} thẻ từ JSON!`);
