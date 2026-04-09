@@ -94,39 +94,6 @@ export const useDeckForm = () => {
     fetchDeckData();
   }, [editDeckId, router]);
 
-  // Import từ CSV
-  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split("\n").filter((line) => line.trim());
-
-      // Parse CSV (format: front,back)
-      const importedCards: Card[] = lines
-        .map((line, index) => {
-          const [front, back] = line.split(",").map((s) => s.trim());
-          return {
-            id: Date.now().toString() + index,
-            front: front || "",
-            back: back || "",
-          };
-        })
-        .filter((card) => card.front && card.back);
-
-      if (importedCards.length > 0) {
-        setCards([...cards, ...importedCards]);
-        alert(`✅ Đã import ${importedCards.length} thẻ từ CSV!`);
-      } else {
-        alert('⚠️ File CSV không hợp lệ! Format: "Tiếng Việt,English"');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  };
-
   // Import từ JSON
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,55 +131,6 @@ export const useDeckForm = () => {
     };
     reader.readAsText(file);
     e.target.value = "";
-  };
-
-  // Export CSV
-  const handleExportCSV = () => {
-    const filledCards = cards.filter((c) => c.front && c.back);
-    if (filledCards.length === 0) {
-      alert("⚠️ Chưa có thẻ nào để export!");
-      return;
-    }
-
-    const csv = filledCards
-      .map((card) => `${card.front},${card.back}`)
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${deckName || "flashcards"}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    alert(`📤 Đã export ${filledCards.length} thẻ sang CSV!`);
-  };
-
-  // Export JSON
-  const handleExportJSON = () => {
-    const filledCards = cards.filter((c) => c.front && c.back);
-    if (filledCards.length === 0) {
-      alert("⚠️ Chưa có thẻ nào để export!");
-      return;
-    }
-
-    const data = {
-      name: deckName,
-      description: deckDescription,
-      cards: filledCards,
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${deckName || "deck"}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    alert(`📤 Đã export ${filledCards.length} thẻ sang JSON!`);
   };
 
   const addCard = () => {
@@ -420,10 +338,7 @@ export const useDeckForm = () => {
     cards,
     isSaving,
     isLoading,
-    handleImportCSV,
     handleImportJSON,
-    handleExportCSV,
-    handleExportJSON,
     addCard,
     deleteCard,
     updateCard,

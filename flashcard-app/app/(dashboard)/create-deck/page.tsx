@@ -24,10 +24,7 @@ function CreateDeckContent() {
     setLanguageMode,
     cards,
     isSaving,
-    handleImportCSV,
     handleImportJSON,
-    handleExportCSV,
-    handleExportJSON,
     addCard,
     deleteCard,
     updateCard,
@@ -63,12 +60,7 @@ function CreateDeckContent() {
             </motion.button>
 
             <div className="flex items-center space-x-3">
-              <ImportExportMenu
-                handleImportCSV={handleImportCSV}
-                handleImportJSON={handleImportJSON}
-                handleExportCSV={handleExportCSV}
-                handleExportJSON={handleExportJSON}
-              />
+              <ImportExportMenu handleImportJSON={handleImportJSON} />
 
               <motion.button
                 onClick={handleSave}
