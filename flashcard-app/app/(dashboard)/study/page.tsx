@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStudySession } from "@/src/hooks/useStudySession";
 import { StudyHeader } from "@/src/components/study/StudyHeader";
 import { Flashcard } from "@/src/components/study/Flashcard";
@@ -31,6 +32,9 @@ function StudyContent() {
     completedCount,
   } = useStudySession();
 
+  const searchParams = useSearchParams();
+  const deckId = Number(searchParams.get("deckId"));
+
   // Completion screen
   if (isCompleted) {
     return (
@@ -38,6 +42,7 @@ function StudyContent() {
         correctCards={correctCards}
         totalCards={cards.length}
         restartSession={restartSession}
+        deckId={deckId}
       />
     );
   }

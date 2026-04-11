@@ -1,17 +1,19 @@
 import { motion } from "framer-motion";
-import { Trophy, RotateCcw } from "lucide-react";
+import { Trophy, CheckCircle, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface CompletionScreenProps {
   correctCards: number;
   totalCards: number;
   restartSession: () => void;
+  deckId: number;
 }
 
 export const CompletionScreen = ({
   correctCards,
   totalCards,
   restartSession,
+  deckId,
 }: CompletionScreenProps) => {
   const router = useRouter();
   const accuracy = Math.round((correctCards / totalCards) * 100);
@@ -51,22 +53,23 @@ export const CompletionScreen = ({
 
         <div className="space-y-4">
           <motion.button
-            onClick={restartSession}
+            onClick={() => router.back()}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-xl transition-all duration-300"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <RotateCcw className="w-5 h-5 inline mr-2" />
-            Học lại
+            <CheckCircle className="w-5 h-5 inline mr-2" />
+            Hoàn thành
           </motion.button>
 
           <motion.button
-            onClick={() => router.back()}
+            onClick={() => router.push(`/study/cram/${deckId}`)}
             className="w-full bg-white border-2 border-gray-200 text-gray-700 py-4 rounded-xl font-semibold hover:border-blue-500 hover:shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            Quay lại
+            <Zap className="w-5 h-5 inline mr-2" />
+            Tự luyện tập
           </motion.button>
         </div>
       </motion.div>
