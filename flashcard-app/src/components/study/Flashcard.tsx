@@ -1,5 +1,4 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2 } from "lucide-react";
 
 interface FlashcardProps {
   currentCard: any;
@@ -65,16 +64,6 @@ export const Flashcard = ({
                 Click để xem nghĩa
               </p>
             </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // Handle audio
-              }}
-              className="absolute bottom-8 p-3 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors text-blue-600"
-            >
-              <Volume2 className="w-6 h-6" />
-            </button>
           </div>
 
           {/* Back */}
@@ -127,16 +116,6 @@ export const Flashcard = ({
                   </div>
                 )}
             </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // Handle audio
-              }}
-              className="absolute bottom-8 p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-            >
-              <Volume2 className="w-6 h-6" />
-            </button>
           </div>
         </motion.div>
       </AnimatePresence>
