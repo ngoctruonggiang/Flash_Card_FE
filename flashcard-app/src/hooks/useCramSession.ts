@@ -86,26 +86,46 @@ export const useCramSession = (deckId: string | number, limit: number = 50) => {
   // In Cram Mode:
   // - isMemorized = true ('Đã thuộc'): Remove from queue
   // - isMemorized = false ('Chưa thuộc'): Move to end of queue
-  const submitReview = useCallback((isMemorized: boolean) => {
-    setQueue((prev) => {
-      const current = prev[0];
-      const nextQueue = prev.slice(1); // Remove current card from head
+  const submitReview = useCallback(
+    async (isMemorized: boolean) => {
+      if (!currentCard) return;
 
-      if (!isMemorized && current) {
-        // Requeue if not memorized
-        nextQueue.push(current);
-      }
+      // Fire and forget API call to count streak
+      const reviewData = {
+        CardReviews: [
+          {
+            cardId: currentCard.id,
+            quality: isMemorized ? "Good" : "Again",
+          },
+        ],
+        reviewedAt: new Date().toISOString(),
+      };
 
-      if (nextQueue.length === 0) {
-        setIsFinished(true);
-        setCurrentCard(null);
-      } else {
-        setCurrentCard(nextQueue[0]);
-      }
+      apiClient
+        .post("/study/cram/review", reviewData)
+        .catch((err) => console.error("Failed to record cram review:", err));
 
-      return nextQueue;
-    });
-  }, []);
+      setQueue((prev) => {
+        const current = prev[0];
+        const nextQueue = prev.slice(1); // Remove current card from head
+
+        if (!isMemorized && current) {
+          // Requeue if not memorized
+          nextQueue.push(current);
+        }
+
+        if (nextQueue.length === 0) {
+          setIsFinished(true);
+          setCurrentCard(null);
+        } else {
+          setCurrentCard(nextQueue[0]);
+        }
+
+        return nextQueue;
+      });
+    },
+    [currentCard]
+  );
 
   const restartSession = useCallback(() => {
     window.location.reload();
