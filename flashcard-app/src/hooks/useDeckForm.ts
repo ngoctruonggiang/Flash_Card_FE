@@ -41,6 +41,39 @@ export const useDeckForm = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "danger" | "success" | "info" | "warning";
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
+  const closeNotification = () => {
+    if (notification.onConfirm) {
+      notification.onConfirm();
+    }
+    setNotification((prev) => ({
+      ...prev,
+      isOpen: false,
+      onConfirm: undefined,
+    }));
+  };
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: "danger" | "success" | "info" | "warning",
+    onConfirm?: () => void
+  ) => {
+    setNotification({ isOpen: true, title, message, type, onConfirm });
+  };
+
   // Fetch deck data if in edit mode
   useEffect(() => {
     if (!editDeckId) return;
@@ -84,8 +117,9 @@ export const useDeckForm = () => {
         }
       } catch (error) {
         console.error("Error fetching deck details:", error);
-        alert("❌ Không thể tải thông tin bộ thẻ!");
-        router.push("/dashboard");
+        showAlert("Lỗi", "Không thể tải thông tin bộ thẻ!", "danger", () =>
+          router.push("/dashboard")
+        );
       } finally {
         setIsLoading(false);
       }
@@ -123,10 +157,14 @@ export const useDeckForm = () => {
               : [],
           }));
           setCards(importedCards);
-          alert(`✅ Đã import ${importedCards.length} thẻ từ JSON!`);
+          showAlert(
+            "Thành công",
+            `Đã import ${importedCards.length} thẻ từ JSON!`,
+            "success"
+          );
         }
       } catch (error) {
-        alert("❌ File JSON không hợp lệ!");
+        showAlert("Lỗi", "File JSON không hợp lệ!", "danger");
       }
     };
     reader.readAsText(file);
@@ -162,7 +200,7 @@ export const useDeckForm = () => {
 
   const handleSave = async () => {
     if (!deckName.trim()) {
-      alert("⚠️ Vui lòng nhập tên bộ thẻ!");
+      showAlert("Cảnh báo", "Vui lòng nhập tên bộ thẻ!", "warning");
       return;
     }
 
@@ -171,7 +209,11 @@ export const useDeckForm = () => {
     );
 
     if (filledCards.length === 0) {
-      alert("⚠️ Vui lòng thêm ít nhất 1 thẻ có nội dung!");
+      showAlert(
+        "Cảnh báo",
+        "Vui lòng thêm ít nhất 1 thẻ có nội dung!",
+        "warning"
+      );
       return;
     }
 
@@ -241,8 +283,12 @@ export const useDeckForm = () => {
         }
 
         await Promise.all(promises);
-        alert(`🎉 Đã cập nhật bộ thẻ "${deckName}" thành công!`);
-        router.back();
+        showAlert(
+          "Thành công",
+          `Đã cập nhật bộ thẻ "${deckName}" thành công!`,
+          "success",
+          () => router.back()
+        );
       } else {
         // --- CREATE MODE ---
 
@@ -298,27 +344,33 @@ export const useDeckForm = () => {
         ).length;
 
         if (failedCards === 0) {
-          alert(
-            `🎉 Đã tạo bộ thẻ "${deckName}" với ${successfulCards} thẻ thành công!`
+          showAlert(
+            "Thành công",
+            `Đã tạo bộ thẻ "${deckName}" với ${successfulCards} thẻ thành công!`,
+            "success",
+            () => router.back()
           );
-          router.back();
         } else if (successfulCards > 0) {
-          alert(
-            `⚠️ Đã tạo bộ thẻ "${deckName}" nhưng chỉ ${successfulCards}/${filledCards.length} thẻ được tạo thành công. ${failedCards} thẻ bị lỗi.`
+          showAlert(
+            "Cảnh báo",
+            `Đã tạo bộ thẻ "${deckName}" nhưng chỉ ${successfulCards}/${filledCards.length} thẻ được tạo thành công. ${failedCards} thẻ bị lỗi.`,
+            "warning",
+            () => router.back()
           );
-          router.back();
         } else {
-          alert(
-            `❌ Đã tạo bộ thẻ "${deckName}" nhưng không thể tạo thẻ nào. Vui lòng thử lại sau.`
+          showAlert(
+            "Lỗi",
+            `Đã tạo bộ thẻ "${deckName}" nhưng không thể tạo thẻ nào. Vui lòng thử lại sau.`,
+            "danger",
+            () => router.back()
           );
-          router.back();
         }
       }
     } catch (error: any) {
       console.error("Error saving deck:", error);
       const errorMessage =
         error.response?.data?.message || error.message || "Lỗi không xác định";
-      alert(`❌ Lỗi khi lưu bộ thẻ: ${errorMessage}`);
+      showAlert("Lỗi", `Lỗi khi lưu bộ thẻ: ${errorMessage}`, "danger");
     } finally {
       setIsSaving(false);
     }
@@ -343,5 +395,7 @@ export const useDeckForm = () => {
     deleteCard,
     updateCard,
     handleSave,
+    notification,
+    closeNotification,
   };
 };

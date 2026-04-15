@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Plus, Play, LogOut, Settings, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { DashboardHeader } from "@/src/components/dashboard/DashboardHeader";
 import { StatsGrid } from "@/src/components/dashboard/StatsGrid";
 import { DeckList } from "@/src/components/dashboard/DeckList";
 import { RecentActivity } from "@/src/components/dashboard/RecentActivity";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,8 +25,35 @@ export default function DashboardPage() {
     recentActivity,
   } = useDashboardData();
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type: "danger" | "success" | "info" | "warning";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    type: "danger",
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText="Đăng xuất"
+      />
       {/* Header/Navigation */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -80,9 +109,13 @@ export default function DashboardPage() {
 
               <motion.button
                 onClick={() => {
-                  if (confirm("Bạn có chắc muốn đăng xuất?")) {
-                    router.push("/");
-                  }
+                  setConfirmModal({
+                    isOpen: true,
+                    title: "Đăng xuất",
+                    message: "Bạn có chắc muốn đăng xuất?",
+                    type: "danger",
+                    onConfirm: () => router.push("/"),
+                  });
                 }}
                 className="p-2 hover:bg-red-50 rounded-xl transition-colors text-red-600"
                 whileHover={{ scale: 1.05 }}

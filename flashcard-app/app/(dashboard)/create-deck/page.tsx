@@ -8,6 +8,7 @@ import { useDeckForm } from "@/src/hooks/useDeckForm";
 import { DeckInfoForm } from "@/src/components/create-deck/DeckInfoForm";
 import { CardList } from "@/src/components/create-deck/CardList";
 import { ImportExportMenu } from "@/src/components/create-deck/ImportExportMenu";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 function CreateDeckContent() {
   const router = useRouter();
@@ -30,6 +31,8 @@ function CreateDeckContent() {
     updateCard,
     handleSave,
     isLoading,
+    notification,
+    closeNotification,
   } = useDeckForm();
 
   if (isLoading) {
@@ -45,6 +48,16 @@ function CreateDeckContent() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
+      <ConfirmModal
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+        onConfirm={closeNotification}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+        singleButton={true}
+        confirmText="Đóng"
+      />
       {/* Header */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">

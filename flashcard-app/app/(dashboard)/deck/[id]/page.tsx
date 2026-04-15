@@ -41,6 +41,7 @@ interface DeckData {
 }
 
 import { StudyModal } from "@/src/components/study/StudyModal";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 export default function DeckDetailPage({
   params,
@@ -57,6 +58,26 @@ export default function DeckDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [deck, setDeck] = useState<DeckData | null>(null);
   const [cards, setCards] = useState<CardResponse[]>([]);
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type: "danger" | "success" | "info" | "warning";
+    singleButton?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    type: "danger",
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     const fetchDeckData = async () => {
@@ -139,22 +160,46 @@ export default function DeckDetailPage({
     }
   };
 
-  const handleDelete = async () => {
+  const executeDelete = async () => {
     if (!deck) return;
-
-    if (
-      confirm(
-        "⚠️ Bạn có chắc muốn xóa bộ thẻ này? Hành động này không thể hoàn tác!"
-      )
-    ) {
-      try {
-        await apiClient.delete(`/deck/${deck.id}`);
-        alert(`🗑️ Đã xóa bộ thẻ "${deck.title}"`);
-        router.back();
-      } catch (err: any) {
-        alert(`❌ Lỗi khi xóa bộ thẻ: ${err.message}`);
-      }
+    try {
+      await apiClient.delete(`/deck/${deck.id}`);
+      setConfirmModal({
+        isOpen: true,
+        title: "Thành công",
+        message: `Đã xóa bộ thẻ "${deck.title}"`,
+        type: "success",
+        singleButton: true,
+        confirmText: "Đóng",
+        onConfirm: () => {
+          closeConfirmModal();
+          router.back();
+        },
+      });
+    } catch (err: any) {
+      setConfirmModal({
+        isOpen: true,
+        title: "Lỗi",
+        message: `Lỗi khi xóa bộ thẻ: ${err.message}`,
+        type: "danger",
+        singleButton: true,
+        confirmText: "Đóng",
+        onConfirm: closeConfirmModal,
+      });
     }
+  };
+
+  const handleDelete = () => {
+    if (!deck) return;
+    setConfirmModal({
+      isOpen: true,
+      title: "Xóa bộ thẻ",
+      message:
+        "Bạn có chắc muốn xóa bộ thẻ này? Hành động này không thể hoàn tác!",
+      type: "danger",
+      confirmText: "Xóa",
+      onConfirm: executeDelete,
+    });
   };
 
   const handleExport = () => {
@@ -183,7 +228,15 @@ export default function DeckDetailPage({
     a.click();
     URL.revokeObjectURL(url);
 
-    alert(`📥 Đã export bộ thẻ "${deck.title}"`);
+    setConfirmModal({
+      isOpen: true,
+      title: "Export thành công",
+      message: `Đã export bộ thẻ "${deck.title}"`,
+      type: "success",
+      singleButton: true,
+      confirmText: "OK",
+      onConfirm: closeConfirmModal,
+    });
   };
 
   // Loading state
@@ -356,6 +409,17 @@ export default function DeckDetailPage({
           isOpen={isStudyModalOpen}
           onClose={() => setIsStudyModalOpen(false)}
           deckId={deck.id}
+        />
+
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={closeConfirmModal}
+          onConfirm={confirmModal.onConfirm}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          type={confirmModal.type}
+          singleButton={confirmModal.singleButton}
+          confirmText={confirmModal.confirmText}
         />
 
         {/* Stats Grid */}

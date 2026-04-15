@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useRegisterForm } from "@/src/hooks/useAuthForms";
 import { PasswordStrength } from "./PasswordStrength";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 export const RegisterForm = () => {
   const {
@@ -25,6 +26,8 @@ export const RegisterForm = () => {
     setFormData,
     handleSubmit,
     passwordStrength,
+    notification,
+    closeNotification,
   } = useRegisterForm();
 
   const strength = passwordStrength(formData.password);
@@ -33,6 +36,16 @@ export const RegisterForm = () => {
 
   return (
     <>
+      <ConfirmModal
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+        onConfirm={closeNotification}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+        singleButton={true}
+        confirmText="Đóng"
+      />
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Tạo tài khoản</h2>
         <p className="text-gray-600">
