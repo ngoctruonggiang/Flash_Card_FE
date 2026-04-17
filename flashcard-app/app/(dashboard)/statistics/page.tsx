@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useStatistics } from "@/src/hooks/useStatistics";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 import { StatsOverview } from "@/src/components/statistics/StatsOverview";
 import { WeeklyChart } from "@/src/components/statistics/WeeklyChart";
 import { RecentActivityList } from "@/src/components/statistics/RecentActivityList";
 import { AdditionalStats } from "@/src/components/statistics/AdditionalStats";
 
 export default function StatisticsPage() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   const router = useRouter();
   const {
     timeRange,
@@ -20,6 +22,17 @@ export default function StatisticsPage() {
     maxCards,
     formatTime,
   } = useStatistics();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Đang kiểm tra xác thực...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

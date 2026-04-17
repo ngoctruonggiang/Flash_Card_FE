@@ -8,12 +8,12 @@ const dataFile = "tests/e2e/test-data.json";
 test.use({ storageState: authFile });
 
 test.describe("Cleanup", () => {
-  test("should delete deck and user account", async ({ page }) => {
+  test("should delete deck", async ({ page }) => {
     // Load test data
     const data = JSON.parse(fs.readFileSync(dataFile, "utf-8"));
     const deckTitle = data.deckTitle;
 
-    // 1. Delete the deck first
+    // Delete the deck
     await page.goto("/dashboard");
     await page.getByText(deckTitle).first().click();
 
@@ -47,9 +47,10 @@ test.describe("Cleanup", () => {
 
     // Verify Deck is Gone
     await expect(page.getByText(deckTitle)).not.toBeVisible();
+  });
 
-    // 2. Delete user account
-    // Navigate to profile/settings page
+  test("should delete user account", async ({ page }) => {
+    // Navigate to settings page
     await page.goto("/settings");
 
     // Click Delete Account button
@@ -59,9 +60,14 @@ test.describe("Cleanup", () => {
     await expect(
       page.getByRole("heading", { name: "Xóa tài khoản" })
     ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Bạn có chắc muốn xóa tài khoản? Hành động này không thể hoàn tác và tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn."
+      )
+    ).toBeVisible();
 
-    // Confirm Delete
-    await page.getByRole("button", { name: "Xác nhận xóa" }).click();
+    // Confirm Delete - use the correct button text from ConfirmModal
+    await page.getByRole("button", { name: "Xóa tài khoản" }).nth(1).click();
 
     // Verify redirect to home or login page
     await expect(page).toHaveURL(/(\/login|\/|\/register)/);

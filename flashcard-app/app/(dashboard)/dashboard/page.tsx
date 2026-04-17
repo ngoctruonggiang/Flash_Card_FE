@@ -6,6 +6,8 @@ import { BookOpen, Plus, Play, LogOut, Settings, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDashboardData } from "@/src/hooks/useDashboardData";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
 import { DashboardHeader } from "@/src/components/dashboard/DashboardHeader";
 import { StatsGrid } from "@/src/components/dashboard/StatsGrid";
 import { DeckList } from "@/src/components/dashboard/DeckList";
@@ -13,6 +15,8 @@ import { RecentActivity } from "@/src/components/dashboard/RecentActivity";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 export default function DashboardPage() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
+  const { logout } = useAuth();
   const router = useRouter();
   const {
     searchQuery,
@@ -42,6 +46,18 @@ export default function DashboardPage() {
   const closeConfirmModal = () => {
     setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   };
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Đang kiểm tra xác thực...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -114,7 +130,7 @@ export default function DashboardPage() {
                     title: "Đăng xuất",
                     message: "Bạn có chắc muốn đăng xuất?",
                     type: "danger",
-                    onConfirm: () => router.push("/"),
+                    onConfirm: logout,
                   });
                 }}
                 className="p-2 hover:bg-red-50 rounded-xl transition-colors text-red-600"

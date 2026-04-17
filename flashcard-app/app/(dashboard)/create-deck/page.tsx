@@ -5,12 +5,14 @@ import { motion } from "framer-motion";
 import { BookOpen, ArrowLeft, Save, Sparkles, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDeckForm } from "@/src/hooks/useDeckForm";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 import { DeckInfoForm } from "@/src/components/create-deck/DeckInfoForm";
 import { CardList } from "@/src/components/create-deck/CardList";
 import { ImportExportMenu } from "@/src/components/create-deck/ImportExportMenu";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 function CreateDeckContent() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   const router = useRouter();
   const {
     deckName,
@@ -35,7 +37,7 @@ function CreateDeckContent() {
     closeNotification,
   } = useDeckForm();
 
-  if (isLoading) {
+  if (isCheckingAuth || isLoading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">

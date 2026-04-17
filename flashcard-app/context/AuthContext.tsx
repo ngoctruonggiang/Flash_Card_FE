@@ -146,9 +146,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Clear all authentication state
     setUser(null);
-    window.localStorage.removeItem("flashlearn_user");
-    router.push("/");
+    // Use clear() to remove ALL localStorage items
+    window.localStorage.clear();
+    // Use location.replace to prevent back button navigation
+    window.location.replace("/");
   };
 
   return (

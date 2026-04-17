@@ -48,15 +48,19 @@ export const useSettings = () => {
     console.log("Settings saved:", settings);
   };
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "⚠️ Bạn có chắc muốn XÓA TÀI KHOẢN? Hành động này không thể hoàn tác!"
-      )
-    ) {
-      alert("🗑️ Tài khoản đã bị xóa!");
-      logout();
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    setShowDeleteConfirm(false);
+    logout();
+  };
+
+  const cancelDeleteAccount = () => {
+    setShowDeleteConfirm(false);
   };
 
   return {
@@ -64,5 +68,8 @@ export const useSettings = () => {
     updateSettings,
     handleSave,
     handleDeleteAccount,
+    showDeleteConfirm,
+    confirmDeleteAccount,
+    cancelDeleteAccount,
   };
 };

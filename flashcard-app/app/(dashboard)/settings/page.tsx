@@ -4,16 +4,37 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/src/hooks/useSettings";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 import { ProfileSection } from "@/src/components/settings/ProfileSection";
 import { StudySettingsSection } from "@/src/components/settings/StudySettingsSection";
 import { NotificationSettingsSection } from "@/src/components/settings/NotificationSettingsSection";
 import { AppearanceSettingsSection } from "@/src/components/settings/AppearanceSettingsSection";
 import { DangerZoneSection } from "@/src/components/settings/DangerZoneSection";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 export default function SettingsPage() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   const router = useRouter();
-  const { settings, updateSettings, handleSave, handleDeleteAccount } =
-    useSettings();
+  const {
+    settings,
+    updateSettings,
+    handleSave,
+    handleDeleteAccount,
+    showDeleteConfirm,
+    confirmDeleteAccount,
+    cancelDeleteAccount,
+  } = useSettings();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Đang kiểm tra xác thực...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -85,6 +106,18 @@ export default function SettingsPage() {
           </div>
         </motion.div>
       </main>
+
+      {/* Delete Account Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={cancelDeleteAccount}
+        onConfirm={confirmDeleteAccount}
+        title="Xóa tài khoản"
+        message="Bạn có chắc muốn xóa tài khoản? Hành động này không thể hoàn tác và tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn."
+        confirmText="Xóa tài khoản"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }

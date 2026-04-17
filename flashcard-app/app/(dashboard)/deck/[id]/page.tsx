@@ -21,6 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import apiClient from "@/src/axios/axios";
 import type { CardResponse } from "@/src/types/dto";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 
 import { getDeckColorClass, getDeckIcon } from "@/src/constants/deck";
 
@@ -48,6 +49,7 @@ export default function DeckDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
 
@@ -240,7 +242,7 @@ export default function DeckDetailPage({
   };
 
   // Loading state
-  if (loading) {
+  if (loading || isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
