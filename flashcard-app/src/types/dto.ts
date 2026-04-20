@@ -195,3 +195,56 @@ export interface Sm2Previews {
   Good: string;
   Easy: string;
 }
+
+// Statistics DTOs
+export interface UserStatisticsResponse {
+  totalCards: number;
+  studiedToday: number;
+  studiedThisWeek: number;
+  studiedThisMonth: number;
+  currentStreak: number;
+  longestStreak: number;
+  averageAccuracy: number;
+  totalStudyTime: number; // in seconds
+  cardsPerDay: number;
+  bestDay: string; // e.g., "Monday"
+  totalDecks: number;
+  totalReviews: number;
+}
+
+export interface DailyBreakdownItem {
+  date: string; // YYYY-MM-DD format
+  dayOfWeek: string; // e.g., "Monday"
+  cardsReviewed: number;
+  accuracy: number;
+  studyTime: number; // in seconds
+  decksStudied: number;
+}
+
+export interface DailyBreakdownSummary {
+  totalCardsReviewed: number;
+  averageAccuracy: number;
+  totalStudyTime: number;
+  daysStudied: number;
+  totalDaysInRange: number;
+}
+
+export interface UserDailyBreakdownResponse {
+  startDate: string;
+  endDate: string;
+  dailyBreakdown: DailyBreakdownItem[];
+  summary: DailyBreakdownSummary;
+}
+
+export interface RecentActivityItem {
+  id: number;
+  type: "study" | "deck_created" | "cards_added";
+  date: string; // ISO 8601 timestamp
+  deckId: number;
+  deckName: string;
+  cardsReviewed: number;
+  accuracy: number;
+  studyTime: number; // in seconds
+  newCards: number;
+  reviewCards: number;
+}
