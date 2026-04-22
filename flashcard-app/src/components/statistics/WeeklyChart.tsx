@@ -1,47 +1,68 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/src/components/ui/chart";
 import { WeeklyData } from "@/src/hooks/useStatistics";
+
+const chartConfig = {
+  cards: {
+    label: "Thẻ đã học",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
 
 interface WeeklyChartProps {
   weeklyData: WeeklyData[];
   maxCards: number;
 }
 
-export const WeeklyChart = ({ weeklyData, maxCards }: WeeklyChartProps) => {
+export const WeeklyChart = ({ weeklyData }: WeeklyChartProps) => {
   return (
-    <div className="bg-white rounded-2xl p-6 border-2 border-gray-100 shadow-lg mb-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">
-        📈 Biểu đồ tuần này
-      </h2>
-
-      <div className="grid grid-cols-7 gap-4">
-        {weeklyData.map((day, index) => (
-          <motion.div
-            key={day.day}
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <div className="mb-2">
-              <div
-                className="w-full bg-gradient-to-t from-blue-600 to-purple-600 rounded-t-xl mx-auto transition-all duration-500"
-                style={{
-                  height: `${(day.cards / maxCards) * 120 + 20}px`,
-                  opacity: day.cards === 0 ? 0.3 : 1,
-                }}
-              ></div>
-            </div>
-            <p className="text-xs font-bold text-gray-900">{day.cards}</p>
-            <p className="text-xs text-gray-500 mt-1">{day.day}</p>
-            {day.cards > 0 && (
-              <>
-                <p className="text-xs text-green-600 mt-1">{day.accuracy}%</p>
-                <p className="text-xs text-blue-600">{day.time}m</p>
-              </>
-            )}
-          </motion.div>
-        ))}
-      </div>
-    </div>
+    <Card className="shadow-sm border-gray-100 mb-8 rounded-3xl">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold text-gray-900">
+          Biểu đồ hoạt động
+        </CardTitle>
+        <CardDescription className="text-gray-500">
+          Hiệu suất học tập trong 7 ngày qua
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+          <BarChart accessibilityLayer data={weeklyData}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="day"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => value}
+            />
+            <ChartTooltip
+              cursor={{ fill: "transparent" }}
+              content={<ChartTooltipContent hideLabel indicator="dot" />}
+            />
+            <Bar
+              dataKey="cards"
+              fill="var(--color-cards)"
+              radius={[8, 8, 0, 0]}
+              barSize={40}
+            />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 };

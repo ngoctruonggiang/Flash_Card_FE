@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Plus, Play, LogOut, Settings, Search } from "lucide-react";
+import {
+  BookOpen,
+  Plus,
+  Play,
+  LogOut,
+  Settings,
+  Search,
+  BarChart2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDashboardData } from "@/src/hooks/useDashboardData";
@@ -102,6 +110,17 @@ export default function DashboardPage() {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
+              <Link href="/statistics">
+                <motion.button
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Thống kê"
+                >
+                  <BarChart2 className="w-5 h-5 text-gray-600" />
+                </motion.button>
+              </Link>
+
               <motion.button
                 onClick={() => router.push("/settings")}
                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors"

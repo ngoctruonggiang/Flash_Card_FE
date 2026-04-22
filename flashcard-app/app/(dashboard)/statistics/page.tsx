@@ -6,7 +6,8 @@ import { WeeklyChart } from "@/src/components/statistics/WeeklyChart";
 import { RecentActivityList } from "@/src/components/statistics/RecentActivityList";
 import { AdditionalStats } from "@/src/components/statistics/AdditionalStats";
 import { motion } from "framer-motion";
-import { RefreshCw, BarChart3 } from "lucide-react";
+import { RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function StatisticsPage() {
   const {
@@ -22,10 +23,10 @@ export default function StatisticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Đang tải thống kê...</p>
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500 font-medium">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
@@ -33,18 +34,18 @@ export default function StatisticsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BarChart3 className="w-8 h-8 text-red-500" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-xl">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Không thể tải thống kê
+            Đã xảy ra lỗi
           </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-500 mb-6">{error}</p>
           <button
             onClick={refresh}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
+            className="w-full py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
             <span>Thử lại</span>
@@ -54,85 +55,103 @@ export default function StatisticsPage() {
     );
   }
 
-  if (!stats) {
-    return null;
-  }
+  if (!stats) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8FAFC] py-8 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                📊 Thống kê học tập
-              </h1>
-              <p className="text-gray-600">
-                Theo dõi tiến độ và hiệu suất học tập của bạn
-              </p>
-            </div>
-            <button
-              onClick={refresh}
-              className="p-3 bg-white rounded-xl border-2 border-gray-100 shadow-lg hover:border-blue-200 transition-colors"
-              title="Làm mới dữ liệu"
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+          <div>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 mb-3 transition-colors group"
             >
-              <RefreshCw className="w-5 h-5 text-gray-600" />
-            </button>
+              <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+              Quay lại Dashboard
+            </Link>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+              Thống kê học tập
+            </h1>
+            <p className="text-slate-500 mt-1">
+              Theo dõi tiến độ và hiệu suất của bạn theo thời gian thực
+            </p>
           </div>
-        </motion.div>
+          <button
+            onClick={refresh}
+            className="p-3 bg-white text-slate-600 rounded-xl hover:bg-slate-50 hover:text-indigo-600 transition-all border border-slate-200 shadow-sm"
+            title="Làm mới dữ liệu"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+        </div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview Rows */}
         <StatsOverview stats={stats} />
 
-        {/* Weekly Chart */}
-        {weeklyData.length > 0 && (
-          <WeeklyChart weeklyData={weeklyData} maxCards={maxCards} />
-        )}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column (Charts & Lists) */}
+          <div className="lg:col-span-2 space-y-8">
+            {weeklyData.length > 0 && (
+              <WeeklyChart weeklyData={weeklyData} maxCards={maxCards} />
+            )}
 
-        {/* Recent Activity and Additional Stats Grid */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Recent Activity */}
-          {activities.length > 0 && (
-            <RecentActivityList activities={activities} />
-          )}
+            {activities.length > 0 && (
+              <RecentActivityList activities={activities} />
+            )}
+          </div>
 
-          {/* Additional Stats */}
-          <div className="space-y-6">
+          {/* Right Column (Summary & Extra Stats) */}
+          <div className="space-y-8">
             <AdditionalStats
               totalStudyTime={stats.totalStudyTime}
               bestDay={stats.bestDay}
               formatTime={formatTime}
             />
+
+            {/* Summary Widget */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-8 text-white shadow-xl shadow-indigo-200 relative overflow-hidden"
+            >
+              {/* Decorative background circles */}
+              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 bg-purple-500 opacity-20 rounded-full blur-2xl pointer-events-none"></div>
+
+              <h3 className="text-lg font-bold mb-6 relative z-10 flex items-center gap-2">
+                <span>Tổng quan</span>
+                <span className="w-full h-px bg-indigo-400/30"></span>
+              </h3>
+
+              <div className="space-y-6 relative z-10">
+                <div>
+                  <p className="text-indigo-200 text-sm mb-1">
+                    Tổng lượt ôn tập
+                  </p>
+                  <p className="text-3xl font-bold">
+                    {stats.totalReviews.toLocaleString()}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-indigo-200 text-sm mb-1">
+                    Bộ thẻ đang học
+                  </p>
+                  <p className="text-3xl font-bold">{stats.totalDecks}</p>
+                </div>
+
+                <div className="pt-4 border-t border-indigo-500/30">
+                  <p className="text-indigo-200 text-xs text-center">
+                    "Không có gì là không thể với sự kiên trì."
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
-
-        {/* Summary Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-2">Tổng quan</h3>
-              <p className="text-blue-100">
-                Bạn đã học{" "}
-                <strong>{stats.totalReviews.toLocaleString()}</strong> lượt qua{" "}
-                <strong>{stats.totalDecks}</strong> bộ thẻ
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-4xl font-bold">{stats.currentStreak}</p>
-              <p className="text-blue-100">ngày streak 🔥</p>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </div>
   );
