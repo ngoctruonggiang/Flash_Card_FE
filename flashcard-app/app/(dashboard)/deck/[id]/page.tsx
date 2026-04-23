@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  BookOpen, 
+import { use, useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  BookOpen,
   ArrowLeft,
   Play,
   Edit,
@@ -15,91 +15,295 @@ import {
   TrendingUp,
   Clock,
   Target,
-  Search
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+  Search,
+  Loader2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import apiClient from "@/src/axios/axios";
+import type { CardResponse } from "@/src/types/dto";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 
-export default function DeckDetailPage({ params }: { params: { id: string } }) {
+import { getDeckColorClass, getDeckIcon } from "@/src/constants/deck";
+
+interface DeckData {
+  id: number;
+  title: string;
+  description: string | null;
+  totalCards: number;
+  studiedCards: number;
+  dueCards: number;
+  accuracy: number;
+  lastStudied: string | null;
+  created: string;
+  streak: number;
+  emoji: string;
+  color: string;
+  iconName?: string;
+}
+
+import { StudyModal } from "@/src/components/study/StudyModal";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+
+export default function DeckDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
+  // Unwrap the params Promise using React.use()
+  const resolvedParams = use(params);
+
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deck, setDeck] = useState<DeckData | null>(null);
+  const [cards, setCards] = useState<CardResponse[]>([]);
 
-  // Mock deck data
-  const deck = {
-    id: params.id,
-    name: 'Từ vựng IELTS',
-    description: 'Từ vựng quan trọng cho kỳ thi IELTS',
-    emoji: '📘',
-    color: 'from-blue-500 to-cyan-500',
-    totalCards: 200,
-    studiedCards: 45,
-    dueCards: 12,
-    accuracy: 87,
-    lastStudied: '2025-10-30',
-    created: '2025-10-01',
-    streak: 7
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type: "danger" | "success" | "info" | "warning";
+    singleButton?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    type: "danger",
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const cards = [
-    { id: 1, front: 'Abundant', back: 'Dồi dào, phong phú', lastReview: '2025-10-30', nextReview: '2025-11-06', difficulty: 'easy' },
-    { id: 2, front: 'Adequate', back: 'Đầy đủ, thích hợp', lastReview: '2025-10-29', nextReview: '2025-11-02', difficulty: 'good' },
-    { id: 3, front: 'Beneficial', back: 'Có lợi, có ích', lastReview: '2025-10-28', nextReview: '2025-10-31', difficulty: 'hard' },
-    { id: 4, front: 'Comprehensive', back: 'Toàn diện, bao quát', lastReview: '2025-10-30', nextReview: '2025-11-13', difficulty: 'easy' },
-    { id: 5, front: 'Contribute', back: 'Đóng góp, góp phần', lastReview: '2025-10-27', nextReview: '2025-10-30', difficulty: 'again' },
-    { id: 6, front: 'Efficient', back: 'Hiệu quả', lastReview: '2025-10-30', nextReview: '2025-11-04', difficulty: 'good' },
-    { id: 7, front: 'Fundamental', back: 'Cơ bản, nền tảng', lastReview: '2025-10-29', nextReview: '2025-11-05', difficulty: 'good' },
-    { id: 8, front: 'Implement', back: 'Thực hiện, áp dụng', lastReview: '2025-10-28', nextReview: '2025-10-31', difficulty: 'hard' }
-  ];
+  useEffect(() => {
+    const fetchDeckData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const stats = [
-    { icon: BookOpen, label: 'Tổng số thẻ', value: deck.totalCards, color: 'from-blue-500 to-cyan-500' },
-    { icon: Target, label: 'Đã học', value: deck.studiedCards, color: 'from-purple-500 to-pink-500' },
-    { icon: Clock, label: 'Cần học hôm nay', value: deck.dueCards, color: 'from-orange-500 to-red-500' },
-    { icon: TrendingUp, label: 'Độ chính xác', value: `${deck.accuracy}%`, color: 'from-green-500 to-emerald-500' }
-  ];
+        const deckId = parseInt(resolvedParams.id);
 
-  const difficultyColor = (difficulty: string) => {
-    switch(difficulty) {
-      case 'easy': return 'bg-blue-100 text-blue-700';
-      case 'good': return 'bg-green-100 text-green-700';
-      case 'hard': return 'bg-orange-100 text-orange-700';
-      case 'again': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
+        // Fetch all data in parallel
+        const [
+          deckResponse,
+          cardsResponse,
+          reviewedCountResponse,
+          dueCardsResponse,
+          statsResponse,
+          lastStudiedResponse,
+          streakResponse,
+        ] = await Promise.all([
+          apiClient.get(`/deck/${deckId}`),
+          apiClient.get(`/card`, { params: { deckId } }),
+          apiClient.get(`/deck/${deckId}/reviewed-count-day`), // Today's reviewed count
+          apiClient.get(`/deck/${deckId}/due-today`),
+          apiClient.get(`/deck/${deckId}/statistics`),
+          apiClient.get(`/deck/${deckId}/last-studied`),
+          apiClient.get(`/study/consecutive-days/${deckId}`),
+        ]);
 
-  const filteredCards = cards.filter(card => 
-    card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    card.back.toLowerCase().includes(searchQuery.toLowerCase())
+        if (!deckResponse.data.data) {
+          throw new Error("Deck not found");
+        }
+
+        const deckData = deckResponse.data.data;
+        const cardsData = cardsResponse.data.data || [];
+        const reviewedCount =
+          reviewedCountResponse.data.data?.reviewedCount || 0;
+        const dueCards = dueCardsResponse.data.data || [];
+        const stats = statsResponse.data.data;
+        const lastStudied =
+          lastStudiedResponse.data.data?.lastStudiedAt || null;
+        const streak = streakResponse.data.data?.consecutiveDays || 0;
+
+        setDeck({
+          id: deckData.id,
+          title: deckData.title,
+          description: deckData.description,
+          totalCards: cardsData.length,
+          studiedCards: reviewedCount,
+          dueCards: dueCards.length,
+          accuracy: stats?.correctPercentage || 0,
+          lastStudied: lastStudied,
+          created: deckData.createdAt || new Date().toISOString(),
+          streak: streak,
+          emoji: "📚", // Fallback
+          color: getDeckColorClass(deckData.colorCode),
+          iconName: deckData.iconName,
+        });
+
+        setCards(cardsData);
+      } catch (err: any) {
+        console.error("Error fetching deck data:", err);
+        setError(err.message || "Failed to load deck data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeckData();
+  }, [resolvedParams.id]);
+
+  const filteredCards = cards.filter(
+    (card) =>
+      card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.back.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleEdit = () => {
-    router.push(`/create-deck?edit=${deck.id}`);
-  };
-
-  const handleDelete = () => {
-    if (confirm('⚠️ Bạn có chắc muốn xóa bộ thẻ này? Hành động này không thể hoàn tác!')) {
-      alert(`🗑️ Đã xóa bộ thẻ "${deck.name}"`);
-      router.push('/dashboard');
+    if (deck) {
+      router.push(`/create-deck?edit=${deck.id}`);
     }
   };
 
+  const executeDelete = async () => {
+    if (!deck) return;
+    try {
+      await apiClient.delete(`/deck/${deck.id}`);
+      setConfirmModal({
+        isOpen: true,
+        title: "Thành công",
+        message: `Đã xóa bộ thẻ "${deck.title}"`,
+        type: "success",
+        singleButton: true,
+        confirmText: "Đóng",
+        onConfirm: () => {
+          closeConfirmModal();
+          router.back();
+        },
+      });
+    } catch (err: any) {
+      setConfirmModal({
+        isOpen: true,
+        title: "Lỗi",
+        message: `Lỗi khi xóa bộ thẻ: ${err.message}`,
+        type: "danger",
+        singleButton: true,
+        confirmText: "Đóng",
+        onConfirm: closeConfirmModal,
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deck) return;
+    setConfirmModal({
+      isOpen: true,
+      title: "Xóa bộ thẻ",
+      message:
+        "Bạn có chắc muốn xóa bộ thẻ này? Hành động này không thể hoàn tác!",
+      type: "danger",
+      confirmText: "Xóa",
+      onConfirm: executeDelete,
+    });
+  };
+
   const handleExport = () => {
+    if (!deck) return;
+
     const data = {
-      name: deck.name,
+      name: deck.title,
       description: deck.description,
-      cards: cards.map(c => ({ front: c.front, back: c.back }))
+      cards: cards.map((c) => ({
+        front: c.front,
+        back: c.back,
+        tags: c.tags,
+        wordType: c.wordType,
+        pronunciation: c.pronunciation,
+        examples: c.examples,
+      })),
     };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${deck.name}.json`;
+    a.download = `${deck.title}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
-    alert(`📥 Đã export bộ thẻ "${deck.name}"`);
+
+    setConfirmModal({
+      isOpen: true,
+      title: "Export thành công",
+      message: `Đã export bộ thẻ "${deck.title}"`,
+      type: "success",
+      singleButton: true,
+      confirmText: "OK",
+      onConfirm: closeConfirmModal,
+    });
   };
+
+  // Loading state
+  if (loading || isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-lg text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !deck) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Lỗi tải dữ liệu
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error || "Không tìm thấy bộ thẻ"}
+          </p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Quay lại Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const Icon = getDeckIcon(deck.iconName);
+
+  const stats = [
+    {
+      icon: BookOpen,
+      label: "Tổng số thẻ",
+      value: deck.totalCards,
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      icon: Target,
+      label: "Đã học hôm nay",
+      value: deck.studiedCards,
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      icon: Clock,
+      label: "Cần học hôm nay",
+      value: deck.dueCards,
+      color: "from-orange-500 to-red-500",
+    },
+    {
+      icon: TrendingUp,
+      label: "Độ chính xác",
+      value: `${deck.accuracy.toFixed(1)}%`,
+      color: "from-green-500 to-emerald-500",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -108,7 +312,7 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <motion.button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push("/dashboard")}
               className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl transition-all font-medium"
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -152,27 +356,47 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
         >
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <div className={`w-16 h-16 bg-gradient-to-br ${deck.color} rounded-2xl flex items-center justify-center text-4xl shadow-lg`}>
-                {deck.emoji}
+              <div
+                className={`w-16 h-16 bg-gradient-to-br ${deck.color} rounded-2xl flex items-center justify-center text-white shadow-lg`}
+              >
+                <Icon className="w-8 h-8" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">{deck.name}</h1>
-                <p className="text-lg text-gray-600">{deck.description}</p>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                  {deck.title}
+                </h1>
+                <p className="text-lg text-gray-600">
+                  {deck.description || "Không có mô tả"}
+                </p>
                 <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                   <span className="flex items-center space-x-1">
                     <Calendar className="w-4 h-4" />
-                    <span>Tạo ngày: {new Date(deck.created).toLocaleDateString('vi-VN')}</span>
+                    <span>
+                      Tạo ngày:{" "}
+                      {new Date(deck.created).toLocaleDateString("vi-VN")}
+                    </span>
                   </span>
-                  <span className="flex items-center space-x-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Học lần cuối: {new Date(deck.lastStudied).toLocaleDateString('vi-VN')}</span>
-                  </span>
+                  {deck.lastStudied && (
+                    <span className="flex items-center space-x-1">
+                      <Clock className="w-4 h-4" />
+                      <span>
+                        Học lần cuối:{" "}
+                        {new Date(deck.lastStudied).toLocaleDateString("vi-VN")}
+                      </span>
+                    </span>
+                  )}
+                  {deck.streak > 0 && (
+                    <span className="flex items-center space-x-1">
+                      <span>🔥</span>
+                      <span>{deck.streak} ngày liên tiếp</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
             <motion.button
-              onClick={() => router.push('/study')}
+              onClick={() => setIsStudyModalOpen(true)}
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all flex items-center space-x-2"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -182,6 +406,23 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
             </motion.button>
           </div>
         </motion.div>
+
+        <StudyModal
+          isOpen={isStudyModalOpen}
+          onClose={() => setIsStudyModalOpen(false)}
+          deckId={deck.id}
+        />
+
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={closeConfirmModal}
+          onConfirm={confirmModal.onConfirm}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          type={confirmModal.type}
+          singleButton={confirmModal.singleButton}
+          confirmText={confirmModal.confirmText}
+        />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -194,7 +435,9 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
               transition={{ delay: index * 0.1 }}
               whileHover={{ y: -5 }}
             >
-              <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-4`}>
+              <div
+                className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-4`}
+              >
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
               <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
@@ -206,7 +449,7 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
         {/* Action Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <motion.button
-            onClick={() => router.push('/create-deck')}
+            onClick={() => router.push("/create-deck")}
             className="bg-white border-2 border-gray-200 p-4 rounded-xl font-semibold text-gray-700 hover:border-blue-500 hover:shadow-lg transition-all flex items-center justify-center space-x-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -216,7 +459,7 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
           </motion.button>
 
           <motion.button
-            onClick={() => router.push('/statistics')}
+            onClick={() => router.push("/statistics")}
             className="bg-white border-2 border-gray-200 p-4 rounded-xl font-semibold text-gray-700 hover:border-blue-500 hover:shadow-lg transition-all flex items-center justify-center space-x-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -251,42 +494,112 @@ export default function DeckDetailPage({ params }: { params: { id: string } }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm kiếm thẻ..."
                 className="w-full pl-12 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900"
-                style={{ color: '#111827' }}
+                style={{ color: "#111827" }}
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            {filteredCards.map((card, index) => (
-              <motion.div
-                key={card.id}
-                className="p-4 border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ x: 5 }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-lg font-bold text-gray-900">{card.front}</span>
-                      <span className="text-gray-400">→</span>
-                      <span className="text-lg text-gray-600">{card.back}</span>
-                    </div>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                      <span>Học lần cuối: {new Date(card.lastReview).toLocaleDateString('vi-VN')}</span>
-                      <span>•</span>
-                      <span>Học tiếp: {new Date(card.nextReview).toLocaleDateString('vi-VN')}</span>
-                    </div>
-                  </div>
+          {filteredCards.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">
+                {cards.length === 0
+                  ? "Chưa có thẻ nào. Hãy thêm thẻ mới!"
+                  : "Không tìm thấy thẻ nào phù hợp."}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredCards.map((card, index) => {
+                const examples =
+                  typeof card.examples === "string"
+                    ? JSON.parse(card.examples)
+                    : card.examples;
+                const hasExamples =
+                  Array.isArray(examples) && examples.length > 0;
 
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${difficultyColor(card.difficulty)}`}>
-                    {card.difficulty}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                return (
+                  <motion.div
+                    key={card.id}
+                    className="p-4 border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:shadow-md transition-all cursor-pointer"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ x: 5 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-1">
+                          <span className="text-lg font-bold text-gray-900">
+                            {card.front}
+                          </span>
+                          <span className="text-gray-400">→</span>
+                          <span className="text-lg text-gray-600">
+                            {card.back}
+                          </span>
+                        </div>
+
+                        {card.pronunciation && (
+                          <div className="mb-2">
+                            <span className="text-sm text-gray-500 font-mono">
+                              {card.pronunciation}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          {card.wordType && (
+                            <div className="flex items-center space-x-2 text-sm">
+                              <span className="text-gray-500">Loại từ:</span>
+                              <span className="text-gray-700 font-medium bg-gray-100 px-2 py-0.5 rounded">
+                                {card.wordType}
+                              </span>
+                            </div>
+                          )}
+
+                          {card.tags && (
+                            <div className="flex items-center space-x-2 text-sm">
+                              <span className="text-gray-500">Tags:</span>
+                              <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                {card.tags}
+                              </span>
+                            </div>
+                          )}
+
+                          {hasExamples && (
+                            <div className="mt-3 bg-gray-50 p-3 rounded-lg">
+                              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">
+                                Ví dụ
+                              </span>
+                              <div className="space-y-2">
+                                {examples.map(
+                                  (
+                                    ex: {
+                                      sentence: string;
+                                      translation: string;
+                                    },
+                                    i: number
+                                  ) => (
+                                    <div key={i} className="text-sm">
+                                      <p className="text-gray-900">
+                                        {ex.sentence}
+                                      </p>
+                                      <p className="text-gray-500 italic">
+                                        {ex.translation}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
     </div>

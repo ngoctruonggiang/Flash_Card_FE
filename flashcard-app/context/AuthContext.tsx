@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { userApi } from "@/src/api/userApi";
+import apiClient from "@/src/axios/axios";
 
 interface User {
   id: string;
@@ -20,53 +20,21 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   register: (
     username: string,
     email: string,
     password: string,
     confirmPassword: string
-  ) => Promise<boolean>;
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const FAKE_USERS = [
-  {
-    id: "1",
-    username: "duchai1703",
-    email: "duchai1703@gmail.com",
-    password: "123456",
-    name: "Đức Hải",
-    avatar: "👨‍💻",
-  },
-  {
-    id: "2",
-    username: "hao",
-    email: "hao@gmail.com",
-    password: "123456",
-    name: "Hào",
-    avatar: "👨‍🎓",
-  },
-  {
-    id: "3",
-    username: "truongdanh",
-    email: "truongdanh@gmail.com",
-    password: "123456",
-    name: "Trường Danh",
-    avatar: "👨‍🔬",
-  },
-  {
-    id: "4",
-    username: "admin",
-    email: "admin@example.com",
-    password: "admin123456",
-    name: "Administrator",
-    avatar: "👑",
-  },
-];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -86,15 +54,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Try API authentication first
     try {
       const response = (
-        await userApi.signIn({
+        await apiClient.post("/auth/login", {
           email: email,
           password: password,
         })
@@ -115,35 +83,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
 
       setIsLoading(false);
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error("Login API error:", error);
-
-      // Fallback to fake users for testing if API fails
-      const foundUser = FAKE_USERS.find(
-        (u) => u.email === email && u.password === password
-      );
-
-      if (foundUser) {
-        const userData = {
-          id: foundUser.id,
-          username: foundUser.username,
-          email: foundUser.email,
-          name: foundUser.name,
-          avatar: foundUser.avatar,
-        };
-        setUser(userData);
-        window.localStorage.setItem(
-          "flashlearn_user",
-          JSON.stringify(userData)
-        );
-        setIsLoading(false);
-        return true;
+      let errorMessage = "Đăng nhập thất bại";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        if (Array.isArray(errorMessage)) {
+          errorMessage = errorMessage[0];
+        }
       }
-
-      // Both API and fake users failed
       setIsLoading(false);
-      return false;
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -152,34 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
     confirmPassword: string
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const existingUser = FAKE_USERS.find((u) => u.email === email);
-    if (existingUser) {
-      setIsLoading(false);
-      return false;
-    }
-
-    // Legacy code
-    {
-      const newUser = {
-        id: Date.now().toString(),
-        username,
-        email,
-        name: username,
-        avatar: "🎓",
-      };
-
-      setUser(newUser);
-      window.localStorage.setItem("flashlearn_user", JSON.stringify(newUser));
-    }
 
     try {
       const response = (
-        await userApi.signUp({
+        await apiClient.post("/auth/register", {
           username: username,
           email: email,
           password: password,
@@ -189,19 +118,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       window.localStorage.setItem("access_token", response.accessToken);
       window.localStorage.setItem("flashcard_user", JSON.stringify(response));
+
+      const userData = {
+        id: response.id.toString(),
+        username: response.username,
+        email: response.email,
+        name: response.username,
+        avatar: "🎓",
+      };
+      setUser(userData);
+      window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
+
       setIsLoading(false);
-      return true;
-    } catch (error) {
-      console.error("Login API error:", error);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Register API error:", error);
+      let errorMessage = "Đăng ký thất bại";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        if (Array.isArray(errorMessage)) {
+          errorMessage = errorMessage[0];
+        }
+      }
       setIsLoading(false);
-      return false;
+      return { success: false, error: errorMessage };
     }
   };
 
   const logout = () => {
+    // Clear all authentication state
     setUser(null);
-    window.localStorage.removeItem("flashlearn_user");
-    router.push("/");
+    // Use clear() to remove ALL localStorage items
+    window.localStorage.clear();
+    // Use location.replace to prevent back button navigation
+    window.location.replace("/");
   };
 
   return (

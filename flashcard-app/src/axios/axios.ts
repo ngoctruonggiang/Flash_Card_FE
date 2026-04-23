@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.SERVER_URL || "http://localhost:3000";
+// Use NEXT_PUBLIC_ prefix for client-side env vars, or default to backend URL
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
