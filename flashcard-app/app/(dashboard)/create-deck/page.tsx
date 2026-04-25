@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  BookOpen, 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  BookOpen,
   ArrowLeft,
   Plus,
   Trash2,
@@ -11,9 +11,11 @@ import {
   Upload,
   Download,
   Sparkles,
-  AlertCircle
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+  AlertCircle,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { deckApi } from "@/src/api/deckApi";
+import { cardApi } from "@/src/api/cardApi";
 
 interface Card {
   id: string;
@@ -23,11 +25,11 @@ interface Card {
 
 export default function CreateDeckPage() {
   const router = useRouter();
-  const [deckName, setDeckName] = useState('');
-  const [deckDescription, setDeckDescription] = useState('');
+  const [deckName, setDeckName] = useState("");
+  const [deckDescription, setDeckDescription] = useState("");
   const [cards, setCards] = useState<Card[]>([
-    { id: '1', front: '', back: '' },
-    { id: '2', front: '', back: '' }
+    { id: "1", front: "", back: "" },
+    { id: "2", front: "", back: "" },
   ]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,17 +41,19 @@ export default function CreateDeckPage() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      const lines = text.split('\n').filter(line => line.trim());
-      
+      const lines = text.split("\n").filter((line) => line.trim());
+
       // Parse CSV (format: front,back)
-      const importedCards: Card[] = lines.map((line, index) => {
-        const [front, back] = line.split(',').map(s => s.trim());
-        return {
-          id: Date.now().toString() + index,
-          front: front || '',
-          back: back || ''
-        };
-      }).filter(card => card.front && card.back);
+      const importedCards: Card[] = lines
+        .map((line, index) => {
+          const [front, back] = line.split(",").map((s) => s.trim());
+          return {
+            id: Date.now().toString() + index,
+            front: front || "",
+            back: back || "",
+          };
+        })
+        .filter((card) => card.front && card.back);
 
       if (importedCards.length > 0) {
         setCards([...cards, ...importedCards]);
@@ -59,7 +63,7 @@ export default function CreateDeckPage() {
       }
     };
     reader.readAsText(file);
-    e.target.value = '';
+    e.target.value = "";
   };
 
   // Import từ JSON
@@ -71,118 +75,179 @@ export default function CreateDeckPage() {
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        
+
         if (data.name) setDeckName(data.name);
         if (data.description) setDeckDescription(data.description);
         if (data.cards && Array.isArray(data.cards)) {
           const importedCards = data.cards.map((card: any, index: number) => ({
             id: Date.now().toString() + index,
-            front: card.front || '',
-            back: card.back || ''
+            front: card.front || "",
+            back: card.back || "",
           }));
           setCards(importedCards);
           alert(`✅ Đã import ${importedCards.length} thẻ từ JSON!`);
         }
       } catch (error) {
-        alert('❌ File JSON không hợp lệ!');
+        alert("❌ File JSON không hợp lệ!");
       }
     };
     reader.readAsText(file);
-    e.target.value = '';
+    e.target.value = "";
   };
 
   // Export CSV
   const handleExportCSV = () => {
-    const filledCards = cards.filter(c => c.front && c.back);
+    const filledCards = cards.filter((c) => c.front && c.back);
     if (filledCards.length === 0) {
-      alert('⚠️ Chưa có thẻ nào để export!');
+      alert("⚠️ Chưa có thẻ nào để export!");
       return;
     }
 
-    const csv = filledCards.map(card => `${card.front},${card.back}`).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csv = filledCards
+      .map((card) => `${card.front},${card.back}`)
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${deckName || 'flashcards'}.csv`;
+    a.download = `${deckName || "flashcards"}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     alert(`📤 Đã export ${filledCards.length} thẻ sang CSV!`);
   };
 
   // Export JSON
   const handleExportJSON = () => {
-    const filledCards = cards.filter(c => c.front && c.back);
+    const filledCards = cards.filter((c) => c.front && c.back);
     if (filledCards.length === 0) {
-      alert('⚠️ Chưa có thẻ nào để export!');
+      alert("⚠️ Chưa có thẻ nào để export!");
       return;
     }
 
     const data = {
       name: deckName,
       description: deckDescription,
-      cards: filledCards
+      cards: filledCards,
     };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${deckName || 'deck'}.json`;
+    a.download = `${deckName || "deck"}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     alert(`📤 Đã export ${filledCards.length} thẻ sang JSON!`);
   };
 
   const addCard = () => {
     const newCard: Card = {
       id: Date.now().toString(),
-      front: '',
-      back: ''
+      front: "",
+      back: "",
     };
     setCards([...cards, newCard]);
   };
 
   const deleteCard = (id: string) => {
     if (cards.length > 1) {
-      setCards(cards.filter(card => card.id !== id));
+      setCards(cards.filter((card) => card.id !== id));
     }
   };
 
-  const updateCard = (id: string, field: 'front' | 'back', value: string) => {
-    setCards(cards.map(card => 
-      card.id === id ? { ...card, [field]: value } : card
-    ));
+  const updateCard = (id: string, field: "front" | "back", value: string) => {
+    setCards(
+      cards.map((card) => (card.id === id ? { ...card, [field]: value } : card))
+    );
   };
 
   const handleSave = async () => {
     if (!deckName.trim()) {
-      alert('⚠️ Vui lòng nhập tên bộ thẻ!');
+      alert("⚠️ Vui lòng nhập tên bộ thẻ!");
       return;
     }
 
-    const filledCards = cards.filter(card => card.front.trim() && card.back.trim());
-    
+    const filledCards = cards.filter(
+      (card) => card.front.trim() && card.back.trim()
+    );
+
     if (filledCards.length === 0) {
-      alert('⚠️ Vui lòng thêm ít nhất 1 thẻ có nội dung!');
+      alert("⚠️ Vui lòng thêm ít nhất 1 thẻ có nội dung!");
       return;
     }
 
     setIsSaving(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    console.log('Deck created:', {
-      name: deckName,
-      description: deckDescription,
-      cards: filledCards
-    });
+    try {
+      // Step 1: Create the deck
+      const deckResponse = await deckApi.create({
+        title: deckName,
+        description: deckDescription || undefined,
+      });
 
-    alert(`🎉 Đã tạo bộ thẻ "${deckName}" với ${filledCards.length} thẻ!`);
-    router.push('/dashboard');
+      const newDeckId = deckResponse.data.data.id;
+      console.log("Deck created:", deckResponse.data.data);
+
+      // Step 2: Create cards for the deck
+      const cardCreationResults = await Promise.allSettled(
+        filledCards.map((card) =>
+          cardApi.create({
+            deckId: newDeckId,
+            front: card.front,
+            back: card.back,
+          })
+        )
+      );
+
+      // Count successful and failed card creations
+      const successfulCards = cardCreationResults.filter(
+        (result) => result.status === "fulfilled"
+      ).length;
+      const failedCards = cardCreationResults.filter(
+        (result) => result.status === "rejected"
+      ).length;
+
+      // Show appropriate message based on results
+      if (failedCards === 0) {
+        alert(
+          `🎉 Đã tạo bộ thẻ "${deckName}" với ${successfulCards} thẻ thành công!`
+        );
+        router.push("/dashboard");
+      } else if (successfulCards > 0) {
+        alert(
+          `⚠️ Đã tạo bộ thẻ "${deckName}" nhưng chỉ ${successfulCards}/${filledCards.length} thẻ được tạo thành công. ${failedCards} thẻ bị lỗi.`
+        );
+        router.push("/dashboard");
+      } else {
+        alert(
+          `❌ Đã tạo bộ thẻ "${deckName}" nhưng không thể tạo thẻ nào. Vui lòng thử lại sau.`
+        );
+        router.push("/dashboard");
+      }
+    } catch (error: any) {
+      console.error("Error creating deck:", error);
+
+      // Handle different error types
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || "Lỗi từ server";
+        alert(`❌ Không thể tạo bộ thẻ: ${errorMessage}`);
+      } else if (error.request) {
+        // Request was made but no response
+        alert(
+          "❌ Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng."
+        );
+      } else {
+        // Something else happened
+        alert("❌ Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -192,7 +257,7 @@ export default function CreateDeckPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <motion.button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push("/dashboard")}
               className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl transition-all font-medium"
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -212,7 +277,7 @@ export default function CreateDeckPage() {
                   <Upload className="w-4 h-4" />
                   <span>Import</span>
                 </motion.button>
-                
+
                 {/* Dropdown Menu */}
                 <div className="absolute top-full mt-2 left-0 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 w-48">
                   <label className="block px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors">
@@ -227,7 +292,7 @@ export default function CreateDeckPage() {
                       <span className="font-medium">Import CSV</span>
                     </div>
                   </label>
-                  
+
                   <label className="block px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-t border-gray-100">
                     <input
                       type="file"
@@ -253,7 +318,7 @@ export default function CreateDeckPage() {
                   <Download className="w-4 h-4" />
                   <span>Export</span>
                 </motion.button>
-                
+
                 {/* Dropdown Menu */}
                 <div className="absolute top-full mt-2 left-0 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 w-48">
                   <button
@@ -265,7 +330,7 @@ export default function CreateDeckPage() {
                       <span className="font-medium">Export CSV</span>
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={handleExportJSON}
                     className="w-full px-4 py-3 hover:bg-blue-50 transition-colors border-t border-gray-100 text-left"
@@ -286,7 +351,7 @@ export default function CreateDeckPage() {
                 whileTap={{ scale: isSaving ? 1 : 0.95 }}
               >
                 <Save className="w-4 h-4" />
-                <span>{isSaving ? 'Đang lưu...' : 'Lưu bộ thẻ'}</span>
+                <span>{isSaving ? "Đang lưu..." : "Lưu bộ thẻ"}</span>
               </motion.button>
             </div>
           </div>
@@ -306,7 +371,9 @@ export default function CreateDeckPage() {
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Tạo bộ thẻ mới</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Tạo bộ thẻ mới
+                </h1>
                 <p className="text-gray-600">Tạo bộ flashcard của riêng bạn</p>
               </div>
             </div>
@@ -325,7 +392,7 @@ export default function CreateDeckPage() {
                   onChange={(e) => setDeckName(e.target.value)}
                   placeholder="VD: Từ vựng IELTS, Business English..."
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900 placeholder:text-gray-400 font-medium"
-                  style={{ color: '#111827' }}
+                  style={{ color: "#111827" }}
                 />
               </div>
 
@@ -339,7 +406,7 @@ export default function CreateDeckPage() {
                   placeholder="Mô tả ngắn về bộ thẻ này..."
                   rows={3}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none text-gray-900 placeholder:text-gray-400"
-                  style={{ color: '#111827' }}
+                  style={{ color: "#111827" }}
                 />
               </div>
             </div>
@@ -351,7 +418,7 @@ export default function CreateDeckPage() {
               <h2 className="text-xl font-bold text-gray-900">
                 Flashcards ({cards.length})
               </h2>
-              
+
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <AlertCircle className="w-4 h-4" />
                 <span>Mặt trước: Tiếng Việt | Mặt sau: Tiếng Anh</span>
@@ -381,10 +448,12 @@ export default function CreateDeckPage() {
                         <input
                           type="text"
                           value={card.front}
-                          onChange={(e) => updateCard(card.id, 'front', e.target.value)}
+                          onChange={(e) =>
+                            updateCard(card.id, "front", e.target.value)
+                          }
                           placeholder="VD: Xin chào"
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900 placeholder:text-gray-400 font-medium"
-                          style={{ color: '#111827' }}
+                          style={{ color: "#111827" }}
                         />
                       </div>
 
@@ -395,10 +464,12 @@ export default function CreateDeckPage() {
                         <input
                           type="text"
                           value={card.back}
-                          onChange={(e) => updateCard(card.id, 'back', e.target.value)}
+                          onChange={(e) =>
+                            updateCard(card.id, "back", e.target.value)
+                          }
                           placeholder="VD: Hello"
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-gray-900 placeholder:text-gray-400 font-medium"
-                          style={{ color: '#111827' }}
+                          style={{ color: "#111827" }}
                         />
                       </div>
                     </div>
@@ -439,7 +510,9 @@ export default function CreateDeckPage() {
             <div className="flex items-start space-x-3">
               <Sparkles className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-bold text-gray-900 mb-2">💡 Mẹo tạo flashcard hiệu quả:</h3>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  💡 Mẹo tạo flashcard hiệu quả:
+                </h3>
                 <ul className="text-sm text-gray-700 space-y-1">
                   <li>• Giữ nội dung ngắn gọn, dễ nhớ (1-2 câu)</li>
                   <li>• Sử dụng ví dụ cụ thể thay vì định nghĩa chung chung</li>
