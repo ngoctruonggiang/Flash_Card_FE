@@ -25,6 +25,11 @@ export interface CardResponse {
   updatedAt?: string;
   reviews?: any[]; // Array of review objects
   deck?: DeckResponse; // Returned when getting card by ID
+  // SM-2 Algorithm fields (optional, may be returned by startSession)
+  repetitions?: number;
+  interval?: number;
+  eFactor?: number;
+  nextReviewDate?: string;
 }
 
 export const cardApi = {
