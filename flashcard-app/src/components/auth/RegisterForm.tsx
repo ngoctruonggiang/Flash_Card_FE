@@ -41,6 +41,28 @@ export const RegisterForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm flex items-center space-x-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>{error}</span>
+          </motion.div>
+        )}
+
         {/* Username Field */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -56,7 +78,7 @@ export const RegisterForm = () => {
                 setFormData({ ...formData, username: e.target.value })
               }
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-              placeholder="duchai1703"
+              placeholder="username"
             />
           </div>
         </div>
@@ -71,12 +93,13 @@ export const RegisterForm = () => {
             <input
               type="email"
               required
+              autoComplete="email"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
               className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-              placeholder="duchai1703@example.com"
+              placeholder="email@example.com"
             />
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { deckApi, DeckResponse } from "@/src/api/deckApi";
+import apiClient from "../axios/axios";
+import { DeckResponse, ApiResponseDto } from "@/src/types/dto";
 import { Brain, Target, TrendingUp, Flame } from "lucide-react";
 
 export const useDashboardData = () => {
@@ -8,17 +9,35 @@ export const useDashboardData = () => {
   const [isLoadingDecks, setIsLoadingDecks] = useState(true);
   const [deckError, setDeckError] = useState<string | null>(null);
 
-  // Mock data
-  const userData = {
-    name: "Đức Hải",
-    username: "duchai1703",
-    email: "duchai1703@example.com",
+  const [userData, setUserData] = useState({
+    name: "Loading...",
+    username: "loading",
+    email: "loading...",
     avatar: "👨‍💻",
-    streak: 7,
-    totalCards: 156,
-    studiedToday: 23,
-    accuracy: 87,
-  };
+    streak: 0,
+    totalCards: 0,
+    studiedToday: 0,
+    accuracy: 0,
+  });
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<ApiResponseDto<any>>("/user");
+        const user = response.data.data;
+        setUserData((prev) => ({
+          ...prev,
+          name: user.username, // API doesn't have name, use username
+          username: user.username,
+          email: user.email,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Fetch decks from API
   useEffect(() => {
@@ -26,18 +45,28 @@ export const useDashboardData = () => {
       try {
         setIsLoadingDecks(true);
         setDeckError(null);
-        const response = await deckApi.getAllForCurrentUser();
+        const response = await apiClient.get<ApiResponseDto<DeckResponse[]>>(
+          "/deck"
+        );
+
+        let totalCardsCount = 0;
 
         // Transform API data to match UI expectations
         const transformedDecks = (response.data.data ?? []).map(
           (deck: DeckResponse, index: number) => {
             const totalCards = deck.cards?.length || 0;
-            // For now, we'll use placeholder values for studiedCards and dueCards
-            // These should come from the review data in a full implementation
-            const studiedCards = 0;
-            const dueCards = totalCards;
+            totalCardsCount += totalCards;
 
-            // Cycle through color schemes and emojis
+            // Calculate due cards
+            const now = new Date();
+            const dueCards = (deck.cards || []).filter((card) => {
+              if (!card.nextReviewDate) return true; // New cards are due
+              return new Date(card.nextReviewDate) <= now; // Due if review date is in the past or today
+            }).length;
+
+            const studiedCards = 0; // Placeholder as we are removing the progress bar
+
+            // Cycle through color schemes and emojis as fallback
             const colorSchemes = [
               "from-blue-500 to-cyan-500",
               "from-purple-500 to-pink-500",
@@ -48,6 +77,23 @@ export const useDashboardData = () => {
             ];
             const emojis = ["📘", "💼", "🎯", "✨", "📚", "🎓", "💡", "🚀"];
 
+            // Helper to get color class from hex code
+            const getColorClass = (hex?: string) => {
+              if (!hex) return colorSchemes[index % colorSchemes.length];
+              // Map hex codes to tailwind classes (simplified mapping)
+              const colorMap: Record<string, string> = {
+                "#3B82F6": "from-blue-500 to-cyan-500",
+                "#EF4444": "from-red-500 to-orange-500",
+                "#10B981": "from-green-500 to-emerald-500",
+                "#F59E0B": "from-yellow-500 to-orange-500",
+                "#8B5CF6": "from-purple-500 to-indigo-500",
+                "#EC4899": "from-pink-500 to-rose-500",
+                "#6366F1": "from-indigo-500 to-blue-500",
+                "#F97316": "from-orange-500 to-red-500",
+              };
+              return colorMap[hex] || colorSchemes[index % colorSchemes.length];
+            };
+
             return {
               id: deck.id,
               name: deck.title,
@@ -55,13 +101,15 @@ export const useDashboardData = () => {
               totalCards,
               studiedCards,
               dueCards,
-              color: colorSchemes[index % colorSchemes.length],
-              emoji: emojis[index % emojis.length],
+              color: getColorClass(deck.colorCode),
+              emoji: deck.iconName || emojis[index % emojis.length], // Pass iconName directly
+              iconName: deck.iconName, // Also pass as specific field
             };
           }
         );
 
         setDecks(transformedDecks);
+        setUserData((prev) => ({ ...prev, totalCards: totalCardsCount }));
       } catch (error: any) {
         console.error("Failed to fetch decks:", error);
         setDeckError(

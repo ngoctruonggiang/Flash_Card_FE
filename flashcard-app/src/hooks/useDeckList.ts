@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { deckApi, DeckResponse } from "../api/deckApi";
+import apiClient from "../axios/axios";
+import { DeckResponse, ApiResponseDto } from "../types/dto";
 
 export interface Deck {
   id: number;
@@ -39,7 +40,9 @@ export const useDeckList = () => {
   const fetchDecks = async () => {
     try {
       setLoading(true);
-      const response = await deckApi.getAllForCurrentUser();
+      const response = await apiClient.get<ApiResponseDto<DeckResponse[]>>(
+        "/deck"
+      );
       if (response.data && response.data.data) {
         const mappedDecks: Deck[] = response.data.data.map(
           (apiDeck: DeckResponse, index: number) => {

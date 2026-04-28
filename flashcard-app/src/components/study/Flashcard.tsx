@@ -12,12 +12,25 @@ export const Flashcard = ({
   isFlipped,
   setIsFlipped,
 }: FlashcardProps) => {
+  // Helper to detect Vietnamese text (contains specific Vietnamese characters)
+  const isVietnamese = (text: string) => {
+    if (!text) return false;
+    const vietnameseRegex =
+      /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+    return vietnameseRegex.test(text);
+  };
+
+  // Determine if the front is English (Front is NOT Vietnamese AND Back IS Vietnamese)
+  // This covers the case where Front is English and Back is Vietnamese
+  const isFrontEnglish =
+    !isVietnamese(currentCard.front) && isVietnamese(currentCard.back);
+
   return (
     <div className="w-full max-w-2xl mb-8" style={{ perspective: "1000px" }}>
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentCard.id} // Use card ID as key to trigger animation on card change
-          className="relative w-full h-96 cursor-pointer"
+          key={currentCard.id}
+          className="relative w-full min-h-[450px] cursor-pointer"
           initial={{ rotateY: 0, opacity: 0, x: 100 }}
           animate={{ rotateY: isFlipped ? 180 : 0, opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -100 }}
@@ -25,42 +38,104 @@ export const Flashcard = ({
           style={{ transformStyle: "preserve-3d" }}
           onClick={() => setIsFlipped(!isFlipped)}
         >
-          {/* Front - Tiếng Việt */}
+          {/* Front */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl border-2 border-blue-100 p-12 flex flex-col items-center justify-center"
+            className="absolute inset-0 bg-linear-to-br from-white to-blue-50 rounded-3xl shadow-2xl border-2 border-blue-100 p-8 flex flex-col items-center justify-center backface-hidden"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
             }}
           >
-            <div className="text-8xl mb-8">{currentCard.emoji}</div>
-            <h2 className="text-5xl font-bold text-gray-900 mb-4 text-center">
-              {currentCard.front}
-            </h2>
-            <p className="text-gray-500">🇻🇳 Tiếng Việt - Click để lật</p>
+            <div className="text-center w-full max-w-lg">
+              <div className="flex flex-col items-center gap-2 mb-4">
+                <h2 className="text-5xl font-bold text-gray-900">
+                  {currentCard.front}
+                </h2>
+                {currentCard.wordType && (
+                  <span className="text-xs px-2 py-1 bg-blue-100 rounded-lg text-blue-700 italic border border-blue-200">
+                    {currentCard.wordType}
+                  </span>
+                )}
 
-            <button className="mt-6 p-3 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors">
-              <Volume2 className="w-6 h-6 text-blue-600" />
+                {/* Show details on Front if it's English - REMOVED as per requirement */}
+                {/* User wants ONLY word and word type on front, regardless of language */}
+              </div>
+
+              <p className="text-gray-500 text-sm uppercase tracking-wider font-medium mt-4">
+                Click để xem nghĩa
+              </p>
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Handle audio
+              }}
+              className="absolute bottom-8 p-3 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors text-blue-600"
+            >
+              <Volume2 className="w-6 h-6" />
             </button>
           </div>
 
-          {/* Back - Tiếng Anh */}
+          {/* Back */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-600 rounded-3xl shadow-2xl p-12 flex flex-col items-center justify-center"
+            className="absolute inset-0 bg-linear-to-br from-slate-900 to-slate-800 rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center text-white"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
             }}
           >
-            <div className="text-8xl mb-8">{currentCard.emoji}</div>
-            <h2 className="text-5xl font-bold text-white mb-4 text-center">
-              {currentCard.back}
-            </h2>
-            <p className="text-blue-100">🇬🇧 English Translation</p>
+            <div className="text-center w-full max-w-lg">
+              <div className="flex flex-col items-center gap-2 mb-4">
+                <h2 className="text-4xl font-bold">{currentCard.back}</h2>
+                <div className="flex items-center gap-2">
+                  {currentCard.wordType && (
+                    <span className="text-xs px-2 py-1 bg-white/10 rounded-lg text-blue-200 italic border border-white/10">
+                      {currentCard.wordType}
+                    </span>
+                  )}
+                  {/* Show pronunciation on Back ALWAYS if it exists */}
+                  {currentCard.pronunciation && (
+                    <span className="text-gray-400 font-mono text-lg">
+                      {currentCard.pronunciation}
+                    </span>
+                  )}
+                </div>
+              </div>
 
-            <button className="mt-6 p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors">
-              <Volume2 className="w-6 h-6 text-white" />
+              {/* Show examples on Back ALWAYS if they exist */}
+              {currentCard.examples &&
+                Array.isArray(currentCard.examples) &&
+                currentCard.examples.length > 0 && (
+                  <div className="mt-4 text-left bg-white/5 rounded-xl p-4 w-full border border-white/5">
+                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-bold">
+                      Ví dụ
+                    </p>
+                    <div className="space-y-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                      {currentCard.examples.map((ex: any, idx: number) => (
+                        <div key={idx} className="text-sm group">
+                          <p className="text-blue-100 mb-1 font-medium">
+                            {ex.sentence}
+                          </p>
+                          <p className="text-gray-400 italic text-xs">
+                            {ex.translation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Handle audio
+              }}
+              className="absolute bottom-8 p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+            >
+              <Volume2 className="w-6 h-6" />
             </button>
           </div>
         </motion.div>

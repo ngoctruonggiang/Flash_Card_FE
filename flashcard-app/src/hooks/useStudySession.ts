@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { studyApi, CardReview } from "@/src/api/studyApi";
-import { CardResponse } from "@/src/api/cardApi";
-import { calculateSm2Intervals, Sm2Previews } from "@/src/utils/sm2";
+import apiClient from "../axios/axios";
+import {
+  CardReview,
+  Sm2Previews,
+  CardResponse,
+  ApiResponseDto,
+  ReviewResponse,
+  SubmitReviewDto,
+} from "@/src/types/dto";
 
 export const useStudySession = () => {
   const searchParams = useSearchParams();
   const deckId = searchParams.get("deckId");
 
   const [cards, setCards] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<CardReview[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [intervalPreviews, setIntervalPreviews] = useState<Sm2Previews | null>(
@@ -20,9 +26,10 @@ export const useStudySession = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [studiedCards, setStudiedCards] = useState(0);
   const [correctCards, setCorrectCards] = useState(0);
-  const [startTime] = useState(Date.now());
-  const [elapsedTime, setElapsedTime] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+
+  const [initialCardCount, setInitialCardCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -34,16 +41,37 @@ export const useStudySession = () => {
 
       try {
         setIsLoading(true);
-        const response = await studyApi.startSession(Number(deckId));
+        const response = await apiClient.get<ApiResponseDto<CardResponse[]>>(
+          `/study/start/${deckId}`
+        );
+        console.log("=== STUDY API RESPONSE ===", response.data.data);
+
         // Transform API data to match UI expectations if needed
         const fetchedCards = (response.data.data || []).map(
-          (card: CardResponse) => ({
-            ...card,
-            emoji: "📝", // Default emoji since API doesn't seem to return one
-          })
+          (card: CardResponse) => {
+            let parsedExamples = card.examples;
+
+            // Parse examples if it's a string (API might return JSON string)
+            if (typeof card.examples === "string") {
+              try {
+                parsedExamples = JSON.parse(card.examples);
+              } catch (e) {
+                console.error("Failed to parse examples for card", card.id, e);
+                parsedExamples = [];
+              }
+            }
+
+            console.log("Card data:", card.id, "Examples:", parsedExamples);
+            return {
+              ...card,
+              examples: parsedExamples,
+              emoji: "📝", // Default emoji since API doesn't seem to return one
+            };
+          }
         );
 
         setCards(fetchedCards);
+        setInitialCardCount(fetchedCards.length);
       } catch (err: any) {
         console.error("Failed to fetch study cards:", err);
         setError(err.response?.data?.message || "Failed to load cards");
@@ -56,26 +84,30 @@ export const useStudySession = () => {
   }, [deckId]);
 
   // Calculate previews when card is flipped
+  // Calculate previews when card is flipped
   useEffect(() => {
-    if (isFlipped && cards[currentCardIndex]) {
-      const previews = calculateSm2Intervals(cards[currentCardIndex]);
-      setIntervalPreviews(previews);
-    } else {
-      setIntervalPreviews(null);
-    }
+    const fetchPreviews = async () => {
+      if (isFlipped && cards[currentCardIndex]) {
+        try {
+          const response = await apiClient.get<ApiResponseDto<Sm2Previews>>(
+            `/study/preview/${cards[currentCardIndex].id}`
+          );
+          setIntervalPreviews(response.data.data);
+        } catch (error) {
+          console.error("Failed to fetch previews:", error);
+          setIntervalPreviews(null);
+        }
+      } else {
+        setIntervalPreviews(null);
+      }
+    };
+
+    fetchPreviews();
   }, [isFlipped, currentCardIndex, cards]);
 
   const currentCard = cards[currentCardIndex];
   const progress =
-    cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
-
-  // Timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [startTime]);
+    initialCardCount > 0 ? (completedCount / initialCardCount) * 100 : 0;
 
   // Handle answer
   const handleAnswer = async (
@@ -93,46 +125,69 @@ export const useStudySession = () => {
 
     const quality = qualityMap[difficulty];
 
-    // Add to reviews
-    const newReview: CardReview = {
-      cardId: currentCard.id,
-      quality: quality,
-    };
+    try {
+      // Submit review immediately
+      const submitData: SubmitReviewDto = {
+        CardReviews: [
+          {
+            cardId: currentCard.id,
+            quality: quality,
+          },
+        ],
+        reviewedAt: new Date().toISOString(),
+      };
 
-    const updatedReviews = [...reviews, newReview];
-    setReviews(updatedReviews);
+      const response = await apiClient.post<ApiResponseDto<ReviewResponse[]>>(
+        "/study/review",
+        submitData
+      );
 
-    if (difficulty === "good" || difficulty === "easy") {
-      setCorrectCards(correctCards + 1);
-    }
+      const reviewResult = response.data.data?.[0];
 
-    setTimeout(async () => {
-      if (currentCardIndex < cards.length - 1) {
-        setCurrentCardIndex(currentCardIndex + 1);
-        setStudiedCards(studiedCards + 1);
-      } else {
-        // Submit all reviews
-        try {
-          await studyApi.submitReview({
-            CardReviews: updatedReviews,
-            reviewedAt: new Date().toISOString(),
-          });
-          setIsCompleted(true);
-        } catch (err) {
-          console.error("Failed to submit reviews:", err);
-          alert("Failed to save progress. Please try again.");
+      if (difficulty === "good" || difficulty === "easy") {
+        setCorrectCards((prev) => prev + 1);
+      }
+
+      // Check if we need to requeue
+      let nextCards = [...cards];
+      let isRequeued = false;
+      if (
+        reviewResult &&
+        (reviewResult.newStatus === "learning" ||
+          reviewResult.newStatus === "relearning")
+      ) {
+        // Requeue the current card to the end
+        // We clone it to ensure it's treated as a new entry in the list
+        nextCards.push({ ...currentCard });
+        setCards(nextCards);
+        isRequeued = true;
+      }
+
+      if (!isRequeued) {
+        setCompletedCount((prev) => prev + 1);
+      }
+
+      setTimeout(() => {
+        if (currentCardIndex < nextCards.length - 1) {
+          setCurrentCardIndex((prev) => prev + 1);
+          setStudiedCards((prev) => prev + 1);
+        } else {
           setIsCompleted(true);
         }
-      }
-    }, 300);
+      }, 300);
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+      alert("Failed to save progress. Please try again.");
+      // We don't advance if submission fails, allowing user to retry
+    }
   };
 
   const restartSession = () => {
     setCurrentCardIndex(0);
     setStudiedCards(0);
     setCorrectCards(0);
-    setReviews([]);
     setIsCompleted(false);
+    setCompletedCount(0);
   };
 
   return {
@@ -144,11 +199,12 @@ export const useStudySession = () => {
     isFlipped,
     setIsFlipped,
     progress,
-    elapsedTime,
     intervalPreviews,
     handleAnswer,
     isCompleted,
     correctCards,
     restartSession,
+    initialCardCount,
+    completedCount,
   };
 };

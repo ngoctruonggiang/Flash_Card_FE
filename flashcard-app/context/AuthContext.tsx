@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { userApi } from "@/src/api/userApi";
+import apiClient from "@/src/axios/axios";
 
 interface User {
   id: string;
@@ -20,13 +20,16 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   register: (
     username: string,
     email: string,
     password: string,
     confirmPassword: string
-  ) => Promise<boolean>;
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -51,12 +54,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
 
     try {
       const response = (
-        await userApi.signIn({
+        await apiClient.post("/auth/login", {
           email: email,
           password: password,
         })
@@ -77,11 +83,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
 
       setIsLoading(false);
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error("Login API error:", error);
+      let errorMessage = "Đăng nhập thất bại";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        if (Array.isArray(errorMessage)) {
+          errorMessage = errorMessage[0];
+        }
+      }
       setIsLoading(false);
-      return false;
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -90,12 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
     confirmPassword: string
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
 
     try {
       const response = (
-        await userApi.signUp({
+        await apiClient.post("/auth/register", {
           username: username,
           email: email,
           password: password,
@@ -117,11 +130,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
 
       setIsLoading(false);
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error("Register API error:", error);
+      let errorMessage = "Đăng ký thất bại";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        if (Array.isArray(errorMessage)) {
+          errorMessage = errorMessage[0];
+        }
+      }
       setIsLoading(false);
-      return false;
+      return { success: false, error: errorMessage };
     }
   };
 

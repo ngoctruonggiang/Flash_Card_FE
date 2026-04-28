@@ -110,7 +110,7 @@ export default function DashboardPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Play className="w-6 h-6" />
-            <span>Bắt đầu học ngay</span>
+            <span>Mở bộ sưu tập thẻ</span>
           </motion.button>
 
           <motion.button

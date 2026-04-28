@@ -22,12 +22,13 @@ function StudyContent() {
     isFlipped,
     setIsFlipped,
     progress,
-    elapsedTime,
     intervalPreviews,
     handleAnswer,
     isCompleted,
     correctCards,
     restartSession,
+    initialCardCount,
+    completedCount,
   } = useStudySession();
 
   // Completion screen
@@ -36,7 +37,6 @@ function StudyContent() {
       <CompletionScreen
         correctCards={correctCards}
         totalCards={cards.length}
-        elapsedTime={elapsedTime}
         restartSession={restartSession}
       />
     );
@@ -57,9 +57,8 @@ function StudyContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <StudyHeader
-        elapsedTime={elapsedTime}
-        currentCardIndex={currentCardIndex}
-        totalCards={cards.length}
+        currentCardIndex={completedCount}
+        totalCards={initialCardCount}
         progress={progress}
       />
 
