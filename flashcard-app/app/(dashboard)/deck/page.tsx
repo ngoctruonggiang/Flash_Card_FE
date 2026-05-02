@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDeckList } from "@/src/hooks/useDeckList";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 import { DeckFilter } from "@/src/components/deck/DeckFilter";
 import { DeckGrid } from "@/src/components/deck/DeckGrid";
 import { DeckList } from "@/src/components/deck/DeckList";
 
 export default function AllDecksPage() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   const router = useRouter();
   const {
     searchQuery,
@@ -19,6 +21,17 @@ export default function AllDecksPage() {
     setSortBy,
     filteredDecks,
   } = useDeckList();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Đang kiểm tra xác thực...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

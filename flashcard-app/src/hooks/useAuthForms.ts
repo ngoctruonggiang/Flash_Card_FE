@@ -52,11 +52,32 @@ export const useRegisterForm = () => {
     confirmPassword: "",
   });
 
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "danger" | "success" | "info" | "warning";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
+  const closeNotification = () => {
+    setNotification((prev) => ({ ...prev, isOpen: false }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("❌ Mật khẩu không khớp!");
+      setNotification({
+        isOpen: true,
+        title: "Lỗi",
+        message: "Mật khẩu không khớp!",
+        type: "danger",
+      });
       return;
     }
 
@@ -98,5 +119,7 @@ export const useRegisterForm = () => {
     setFormData,
     handleSubmit,
     passwordStrength,
+    notification,
+    closeNotification,
   };
 };

@@ -1,7 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStudySession } from "@/src/hooks/useStudySession";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 import { StudyHeader } from "@/src/components/study/StudyHeader";
 import { Flashcard } from "@/src/components/study/Flashcard";
 import { AnswerButtons } from "@/src/components/study/AnswerButtons";
@@ -13,6 +15,7 @@ import {
 } from "@/src/components/study/LoadingErrorStates";
 
 function StudyContent() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   const {
     cards,
     isLoading,
@@ -31,6 +34,9 @@ function StudyContent() {
     completedCount,
   } = useStudySession();
 
+  const searchParams = useSearchParams();
+  const deckId = Number(searchParams.get("deckId"));
+
   // Completion screen
   if (isCompleted) {
     return (
@@ -38,11 +44,12 @@ function StudyContent() {
         correctCards={correctCards}
         totalCards={cards.length}
         restartSession={restartSession}
+        deckId={deckId}
       />
     );
   }
 
-  if (isLoading) {
+  if (isCheckingAuth || isLoading) {
     return <LoadingState message="Đang tải thẻ học..." />;
   }
 

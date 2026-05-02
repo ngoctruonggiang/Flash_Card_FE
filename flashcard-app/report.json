@@ -1,0 +1,174 @@
+{
+  "config": {
+    "configFile": "D:\\Đồ Án Testing\\FlashLearn - FE\\flashcard-app\\playwright.config.ts",
+    "rootDir": "D:/Đồ Án Testing/FlashLearn - FE/flashcard-app/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "D:/Đồ Án Testing/FlashLearn - FE/flashcard-app/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "D:/Đồ Án Testing/FlashLearn - FE/flashcard-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3001",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e\\02_deck.spec.ts",
+      "file": "e2e/02_deck.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Deck Management",
+          "file": "e2e/02_deck.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should create a deck with 10 cards and edit it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15266,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-28T17:28:03.639Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ebd8ce1fa3398ba91314-50dfb40f82cb06ccad59",
+              "file": "e2e/02_deck.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "should delete a deck",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 30041,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "D:\\Đồ Án Testing\\FlashLearn - FE\\flashcard-app\\tests\\e2e\\02_deck.spec.ts",
+                            "column": 45,
+                            "line": 193
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Delete Deck 1764350885291').first()\u001b[22m\n\n\n  191 |\n  192 |     // 2. Go to Deck Page\n> 193 |     await page.getByText(deckTitle).first().click();\n      |                                             ^\n  194 |\n  195 |     // 3. Click Delete\n  196 |     await page.getByRole(\"button\", { name: \"Xóa\" }).click();\n    at D:\\Đồ Án Testing\\FlashLearn - FE\\flashcard-app\\tests\\e2e\\02_deck.spec.ts:193:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-28T17:28:03.690Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Đồ Án Testing\\FlashLearn - FE\\flashcard-app\\test-results\\e2e-02_deck-Deck-Management-should-delete-a-deck-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ebd8ce1fa3398ba91314-a68d77c26c964ce43b02",
+              "file": "e2e/02_deck.spec.ts",
+              "line": 181,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-11-28T17:28:02.121Z",
+    "duration": 33171.276,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
