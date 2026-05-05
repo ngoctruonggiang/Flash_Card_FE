@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import apiClient from "../axios/axios";
-import { DeckResponse, ApiResponseDto } from "@/src/types/dto";
+import {
+  DeckResponse,
+  ApiResponseDto,
+  UserStatisticsResponse,
+  RecentActivityItem,
+} from "@/src/types/dto";
 import { Brain, Target, TrendingUp, Flame } from "lucide-react";
 
 export const useDashboardData = () => {
@@ -15,6 +20,7 @@ export const useDashboardData = () => {
     email: "loading...",
     avatar: "👨‍💻",
     streak: 0,
+    longestStreak: 0,
     totalCards: 0,
     studiedToday: 0,
     accuracy: 0,
@@ -37,6 +43,31 @@ export const useDashboardData = () => {
       }
     };
     fetchUser();
+  }, []);
+
+  // Fetch user statistics
+  useEffect(() => {
+    const fetchUserStatistics = async () => {
+      try {
+        const response = await apiClient.get<
+          ApiResponseDto<UserStatisticsResponse>
+        >("/study/user-statistics");
+        const stats = response.data.data;
+        if (stats) {
+          setUserData((prev) => ({
+            ...prev,
+            streak: stats.currentStreak,
+            longestStreak: stats.longestStreak,
+            totalCards: stats.totalCards,
+            studiedToday: stats.studiedToday,
+            accuracy: Math.round(stats.averageAccuracy),
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch user statistics:", error);
+      }
+    };
+    fetchUserStatistics();
   }, []);
 
   // Fetch decks from API
@@ -153,18 +184,77 @@ export const useDashboardData = () => {
       icon: Flame,
       label: "Chuỗi ngày học",
       value: `${userData.streak} ngày`,
-      change: "Kỷ lục: 15 ngày",
+      change: `Kỷ lục: ${userData.longestStreak} ngày`,
       color: "from-orange-500 to-red-500",
       bgColor: "bg-orange-50",
     },
   ];
 
-  const recentActivity = [
-    { date: "2025-10-30", cards: 23, accuracy: 89, time: "15 phút" },
-    { date: "2025-10-29", cards: 35, accuracy: 85, time: "22 phút" },
-    { date: "2025-10-28", cards: 28, accuracy: 91, time: "18 phút" },
-    { date: "2025-10-27", cards: 42, accuracy: 83, time: "28 phút" },
-  ];
+  // State for recent activity
+  const [recentActivity, setRecentActivity] = useState<
+    Array<{ date: string; cards: number; accuracy: number; time: string }>
+  >([]);
+
+  // Fetch recent activity
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      try {
+        const response = await apiClient.get<
+          ApiResponseDto<RecentActivityItem[]>
+        >("/study/recent-activity?limit=10");
+        const data = response.data.data;
+        if (data && Array.isArray(data)) {
+          // Transform API response to match UI expectations
+          const transformed = data.map((item) => {
+            const studyTimeMinutes = Math.round(item.studyTime / 60);
+            return {
+              date: new Date(item.date).toISOString().split("T")[0],
+              cards: item.cardsReviewed,
+              accuracy: Math.round(item.accuracy),
+              timeMinutes: studyTimeMinutes,
+            };
+          });
+
+          // Group activities by date
+          const groupedByDate = transformed.reduce((acc, activity) => {
+            const existing = acc.find((item) => item.date === activity.date);
+            if (existing) {
+              // Combine activities from the same date
+              existing.cards += activity.cards;
+              existing.timeMinutes += activity.timeMinutes;
+              // Calculate weighted average accuracy
+              existing.totalAccuracy += activity.accuracy;
+              existing.count += 1;
+            } else {
+              acc.push({
+                date: activity.date,
+                cards: activity.cards,
+                timeMinutes: activity.timeMinutes,
+                totalAccuracy: activity.accuracy,
+                count: 1,
+              });
+            }
+            return acc;
+          }, [] as Array<{ date: string; cards: number; timeMinutes: number; totalAccuracy: number; count: number }>);
+
+          // Convert to final format and calculate average accuracy
+          const finalActivities = groupedByDate
+            .map((item) => ({
+              date: item.date,
+              cards: item.cards,
+              accuracy: Math.round(item.totalAccuracy / item.count),
+              time: `${item.timeMinutes} phút`,
+            }))
+            .slice(0, 4); // Limit to 4 entries after grouping
+
+          setRecentActivity(finalActivities);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recent activity:", error);
+      }
+    };
+    fetchRecentActivity();
+  }, []);
 
   return {
     searchQuery,
