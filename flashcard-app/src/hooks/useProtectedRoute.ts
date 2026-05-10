@@ -15,9 +15,9 @@ export function useProtectedRoute() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check if user has a valid token in localStorage
-    const token = localStorage.getItem("access_token");
-    const user = localStorage.getItem("flashlearn_user");
+    // Check if user has a valid token in sessionStorage
+    const token = sessionStorage.getItem("access_token");
+    const user = sessionStorage.getItem("flashlearn_user");
 
     if (!token || !user) {
       // No authentication found, redirect to login

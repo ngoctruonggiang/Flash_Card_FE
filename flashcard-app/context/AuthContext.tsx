@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const savedUser = window.localStorage.getItem("flashlearn_user");
+      const savedUser = window.sessionStorage.getItem("flashlearn_user");
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
@@ -68,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
       ).data.data!;
 
-      window.localStorage.setItem("access_token", response.accessToken);
-      window.localStorage.setItem("flashcard_user", JSON.stringify(response));
+      window.sessionStorage.setItem("access_token", response.accessToken);
+      window.sessionStorage.setItem("flashcard_user", JSON.stringify(response));
 
       // Set user from API response
       const userData = {
@@ -80,7 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar: "🎓", // Default avatar
       };
       setUser(userData);
-      window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
+      window.sessionStorage.setItem(
+        "flashlearn_user",
+        JSON.stringify(userData)
+      );
 
       setIsLoading(false);
       return { success: true };
@@ -116,8 +119,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
       ).data.data!;
 
-      window.localStorage.setItem("access_token", response.accessToken);
-      window.localStorage.setItem("flashcard_user", JSON.stringify(response));
+      window.sessionStorage.setItem("access_token", response.accessToken);
+      window.sessionStorage.setItem("flashcard_user", JSON.stringify(response));
 
       const userData = {
         id: response.id.toString(),
@@ -127,7 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar: "🎓",
       };
       setUser(userData);
-      window.localStorage.setItem("flashlearn_user", JSON.stringify(userData));
+      window.sessionStorage.setItem(
+        "flashlearn_user",
+        JSON.stringify(userData)
+      );
 
       setIsLoading(false);
       return { success: true };
@@ -149,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear all authentication state
     setUser(null);
     // Use clear() to remove ALL localStorage items
-    window.localStorage.clear();
+    window.sessionStorage.clear();
     // Use location.replace to prevent back button navigation
     window.location.replace("/");
   };

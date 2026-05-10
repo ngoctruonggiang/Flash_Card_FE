@@ -24,16 +24,29 @@ export const LandingNavbar = () => {
           </motion.div>
         </Link>
 
-        <motion.button
-          onClick={() => router.push("/login")}
-          className="px-6 py-2 bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Đăng nhập
-        </motion.button>
+        <div className="flex items-center space-x-4">
+          <motion.button
+            onClick={() => router.push("/login")}
+            className="w-34 px-6 py-2 text-gray-600 font-medium hover:text-blue-600 transition-colors border border-gray-600 rounded-xl"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Đăng nhập
+          </motion.button>
+
+          <motion.button
+            onClick={() => router.push("/register")}
+            className="w-34 px-6 py-2 bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 border border-transparent"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Đăng ký
+          </motion.button>
+        </div>
       </div>
     </nav>
   );
