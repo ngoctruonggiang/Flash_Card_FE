@@ -74,13 +74,19 @@ export const useDeckForm = () => {
     setNotification({ isOpen: true, title, message, type, onConfirm });
   };
 
+  // Set loading immediately for edit mode - before any render happens
+  // Using a ref to track if we should be loading
+  const shouldLoadEditData = !!editDeckId;
+  
   // Fetch deck data if in edit mode
   useEffect(() => {
     if (!editDeckId) return;
 
+    // Set loading true immediately when effect runs
+    setIsLoading(true);
+    
     const fetchDeckData = async () => {
       try {
-        setIsLoading(true);
         const [deckRes, cardsRes] = await Promise.all([
           apiClient.get<ApiResponseDto<DeckResponse>>(`/deck/${editDeckId}`),
           apiClient.get<ApiResponseDto<CardResponse[]>>("/card", {
@@ -287,7 +293,7 @@ export const useDeckForm = () => {
           "Thành công",
           `Đã cập nhật bộ thẻ "${deckName}" thành công!`,
           "success",
-          () => router.back()
+          () => router.push(`/deck/${editDeckId}`)
         );
       } else {
         // --- CREATE MODE ---
@@ -348,21 +354,21 @@ export const useDeckForm = () => {
             "Thành công",
             `Đã tạo bộ thẻ "${deckName}" với ${successfulCards} thẻ thành công!`,
             "success",
-            () => router.back()
+            () => router.push(`/deck/${newDeckId}`)
           );
         } else if (successfulCards > 0) {
           showAlert(
             "Cảnh báo",
             `Đã tạo bộ thẻ "${deckName}" nhưng chỉ ${successfulCards}/${filledCards.length} thẻ được tạo thành công. ${failedCards} thẻ bị lỗi.`,
             "warning",
-            () => router.back()
+            () => router.push(`/deck/${newDeckId}`)
           );
         } else {
           showAlert(
             "Lỗi",
             `Đã tạo bộ thẻ "${deckName}" nhưng không thể tạo thẻ nào. Vui lòng thử lại sau.`,
             "danger",
-            () => router.back()
+            () => router.push(`/deck/${newDeckId}`)
           );
         }
       }
@@ -389,7 +395,8 @@ export const useDeckForm = () => {
     setLanguageMode,
     cards,
     isSaving,
-    isLoading,
+    // For edit mode, show loading if we should load but haven't finished yet
+    isLoading: shouldLoadEditData ? (isLoading || deckName === "") : isLoading,
     handleImportJSON,
     addCard,
     deleteCard,

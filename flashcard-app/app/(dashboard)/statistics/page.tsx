@@ -8,8 +8,10 @@ import { AdditionalStats } from "@/src/components/statistics/AdditionalStats";
 import { motion } from "framer-motion";
 import { RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
 
 export default function StatisticsPage() {
+  const { isLoading: isCheckingAuth } = useProtectedRoute();
   const {
     stats,
     weeklyData,
@@ -21,7 +23,7 @@ export default function StatisticsPage() {
     formatTime,
   } = useStatistics();
 
-  if (isLoading) {
+  if (isCheckingAuth || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

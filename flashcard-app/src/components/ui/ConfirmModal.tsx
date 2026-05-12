@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X, CheckCircle, Info } from "lucide-react";
 
@@ -25,6 +25,16 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   type = "danger",
   singleButton = false,
 }) => {
+  // Auto-close success modals after 1.5 seconds
+  useEffect(() => {
+    if (isOpen && type === "success" && singleButton) {
+      const timer = setTimeout(() => {
+        onConfirm();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, type, singleButton, onConfirm]);
+
   if (!isOpen) return null;
 
   const getIcon = () => {

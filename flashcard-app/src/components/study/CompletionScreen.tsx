@@ -31,9 +31,11 @@ export const CompletionScreen = ({
 
         <h1 className="text-4xl font-bold text-gray-900 mb-4">🎉 Xuất sắc!</h1>
 
-        <p className="text-xl text-gray-600 mb-8">
+        <p className="text-xl text-gray-600 mb-4">
           Bạn đã hoàn thành phiên học này!
         </p>
+
+        <p className="text-lg text-gray-700 mb-8">Kết quả</p>
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="bg-blue-50 rounded-2xl p-6">

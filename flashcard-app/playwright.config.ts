@@ -36,10 +36,17 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers */
+  /* Configure projects for major browsers */
   projects: [
+    // Global setup is disabled as we use per-test unique users in fixtures.ts
+    // { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // storageState: "tests/.auth/user.json", // Disabled global auth
+      },
+      // dependencies: ['setup'], // Disabled dependency
     },
 
     // {
@@ -72,6 +79,9 @@ export default defineConfig({
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
   ],
+
+  /* Ignore setup files in general test runs */
+  testIgnore: "**/auth.setup.ts",
 
   /* Run your local dev server before starting the tests */
   webServer: {

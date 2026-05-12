@@ -59,7 +59,7 @@ export const DeckList = ({ decks, isLoading, error }: DeckListProps) => {
           onClick={() => router.push("/create-deck")}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Tạo bộ thẻ mới
+          Tạo ngay
         </button>
       </div>
     );

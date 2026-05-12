@@ -281,7 +281,7 @@ export default function DeckDetailPage({
   const stats = [
     {
       icon: BookOpen,
-      label: "Tổng số thẻ",
+      label: "Tổng thẻ",
       value: deck.totalCards,
       color: "from-blue-500 to-cyan-500",
     },

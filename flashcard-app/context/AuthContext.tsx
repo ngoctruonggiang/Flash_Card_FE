@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Use clear() to remove ALL localStorage items
     window.sessionStorage.clear();
     // Use location.replace to prevent back button navigation
-    window.location.replace("/");
+    window.location.replace("/login");
   };
 
   return (
