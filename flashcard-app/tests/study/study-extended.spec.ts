@@ -14,7 +14,10 @@ async function createDeckWithCards(
 
   for (const card of cards) {
     await page.click('button:has-text("Thêm thẻ mới")');
-    await page.locator('input[placeholder="VD: Xin chào"]').last().fill(card.front);
+    await page
+      .locator('input[placeholder="VD: Xin chào"]')
+      .last()
+      .fill(card.front);
     await page.locator('input[placeholder="VD: Hello"]').last().fill(card.back);
   }
 
@@ -37,7 +40,10 @@ async function createDeckWithCards(
     await page.goto("/dashboard");
     await page.waitForTimeout(1000);
     // Click the first deck card
-    const deckCard = page.locator('[class*="cursor-pointer"]').filter({ hasText: deckName }).first();
+    const deckCard = page
+      .locator('[class*="cursor-pointer"]')
+      .filter({ hasText: deckName })
+      .first();
     if (await deckCard.isVisible().catch(() => false)) {
       await deckCard.click();
       await page.waitForURL(/\/deck\/\d+/, { timeout: 10000 }).catch(() => {});
@@ -59,13 +65,19 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       );
 
       await page.click('button:has-text("Thêm thẻ mới")');
-      await page.locator('input[placeholder="VD: Xin chào"]').last().fill("Word1");
-      await page.locator('input[placeholder="VD: Hello"]').last().fill("Trans1");
+      await page
+        .locator('input[placeholder="VD: Xin chào"]')
+        .last()
+        .fill("Word1");
+      await page
+        .locator('input[placeholder="VD: Hello"]')
+        .last()
+        .fill("Trans1");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
 
       // Wait for success modal heading
-      const successHeading = page.getByRole('heading', { name: 'Thành công' });
+      const successHeading = page.getByRole("heading", { name: "Thành công" });
       await expect(successHeading).toBeVisible({ timeout: 15000 });
     });
 
@@ -97,7 +109,9 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       ]);
 
       await page.click('button:has-text("Bắt đầu học")');
-      await expect(page.locator('button:has-text("Học theo lộ trình")')).toBeVisible({ timeout: 10000 });
+      await expect(
+        page.locator('button:has-text("Học theo lộ trình")')
+      ).toBeVisible({ timeout: 10000 });
 
       // Close the modal
       const closeButton = page.locator("button:has(svg.lucide-x)");
@@ -126,7 +140,9 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       await page.click('button:has-text("Học theo lộ trình")');
       await page.waitForURL(/\/study\?deckId=/, { timeout: 20000 });
 
-      await expect(page.locator("text=FlipFront")).toBeVisible({ timeout: 10000 });
+      await expect(page.locator("text=FlipFront")).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test("TC-STUDY-EXT-005: Should flip to show back of card", async ({
@@ -142,7 +158,9 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       await page.waitForURL(/\/study\?deckId=/, { timeout: 20000 });
 
       await page.click("text=FlipFront2");
-      await expect(page.locator("text=FlipBack2")).toBeVisible({ timeout: 5000 });
+      await expect(page.locator("text=FlipBack2")).toBeVisible({
+        timeout: 5000,
+      });
     });
   });
 
@@ -162,7 +180,10 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       await page.click("text=RatingFront");
 
       await expect(
-        page.locator("button").filter({ hasText: /Dễ|Easy|Good|Tốt|Khó|Hard|Lại|Again/i }).first()
+        page
+          .locator("button")
+          .filter({ hasText: /Dễ|Easy|Good|Tốt|Khó|Hard|Lại|Again/i })
+          .first()
       ).toBeVisible({ timeout: 5000 });
     });
 
@@ -181,7 +202,7 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       await page.click("text=AgainFront");
 
       // Use more specific selector - the Again rating button has "Again" and "<1 min"
-      const againButton = page.getByRole('button', { name: /Again.*min/i });
+      const againButton = page.getByRole("button", { name: /Again.*min/i });
       if (await againButton.isVisible()) {
         await againButton.click();
       }
@@ -201,7 +222,9 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
 
       await page.click("text=HardFront");
 
-      const hardButton = page.locator("button").filter({ hasText: /Khó|Hard/i });
+      const hardButton = page
+        .locator("button")
+        .filter({ hasText: /Khó|Hard/i });
       if (await hardButton.isVisible()) {
         await hardButton.click();
       }
@@ -221,7 +244,9 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
 
       await page.click("text=GoodFront");
 
-      const goodButton = page.locator("button").filter({ hasText: /Tốt|Good/i });
+      const goodButton = page
+        .locator("button")
+        .filter({ hasText: /Tốt|Good/i });
       if (await goodButton.isVisible()) {
         await goodButton.click();
       }
@@ -263,10 +288,16 @@ test.describe("UC-STUDY-EXTENDED: Extended Study Session Tests", () => {
       await page.click('button:has-text("Học theo lộ trình")');
       await page.waitForURL(/\/study\?deckId=/, { timeout: 20000 });
 
-      await expect(page.locator("text=Progress1")).toBeVisible({ timeout: 10000 });
+      await expect(page.locator("text=Progress1")).toBeVisible({
+        timeout: 10000,
+      });
 
       await page.click("text=Progress1");
-      await page.locator("button").filter({ hasText: /Dễ|Easy|Good|Tốt/i }).first().click();
+      await page
+        .locator("button")
+        .filter({ hasText: /Dễ|Easy|Good|Tốt/i })
+        .first()
+        .click();
 
       await page.waitForTimeout(1000);
     });

@@ -58,11 +58,11 @@ test.describe("E2E: Complete User Flows", () => {
 
       // 4. Save the deck
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and close modal
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
       await page.locator('button:has-text("Đóng")').click();
-      
+
       // Wait for navigation to deck page
       await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
 
@@ -106,14 +106,22 @@ test.describe("E2E: Complete User Flows", () => {
 
       // Add card content (required)
       await page.click('button:has-text("Thêm thẻ mới")');
-      await page.locator('input[placeholder="VD: Xin chào"]').last().fill("ManageFront");
-      await page.locator('input[placeholder="VD: Hello"]').last().fill("ManageBack");
+      await page
+        .locator('input[placeholder="VD: Xin chào"]')
+        .last()
+        .fill("ManageFront");
+      await page
+        .locator('input[placeholder="VD: Hello"]')
+        .last()
+        .fill("ManageBack");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
 
     test("TC-E2E-003: Card management flow - Add, Edit, Delete", async ({
@@ -144,10 +152,12 @@ test.describe("E2E: Complete User Flows", () => {
       await page.locator('input[placeholder="VD: Hello"]').last().fill("BackB");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
   });
 
@@ -234,11 +244,11 @@ test.describe("E2E: Complete User Flows", () => {
       // Logout
       await page.locator("button:has(svg.lucide-log-out)").click();
       await page.locator('button:has-text("Đăng xuất")').click();
-      
+
       // After logout, user may be redirected to home (/) or login (/login)
       await page.waitForURL(/\/($|login)/, { timeout: 10000 });
       const url = page.url();
-      expect(url.endsWith('/') || url.includes('/login')).toBeTruthy();
+      expect(url.endsWith("/") || url.includes("/login")).toBeTruthy();
     });
   });
 });

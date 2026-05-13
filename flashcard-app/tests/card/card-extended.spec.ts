@@ -76,10 +76,12 @@ test.describe("UC-CARD-EXTENDED: Extended Card Management Tests", () => {
         .fill("Hello! مرحبا 🌍");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
 
     test("TC-CARD-EXT-004: Should save card with long content", async ({
@@ -107,10 +109,12 @@ test.describe("UC-CARD-EXTENDED: Extended Card Management Tests", () => {
         .fill("Translation");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
   });
 
@@ -140,10 +144,12 @@ test.describe("UC-CARD-EXTENDED: Extended Card Management Tests", () => {
       }
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
 
     test("TC-CARD-EXT-006: Should handle card reordering in edit mode", async ({
@@ -179,10 +185,12 @@ test.describe("UC-CARD-EXTENDED: Extended Card Management Tests", () => {
         .fill("SecondBack");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
   });
 
@@ -210,10 +218,12 @@ test.describe("UC-CARD-EXTENDED: Extended Card Management Tests", () => {
         .fill("OriginalBack");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
 
     test("TC-CARD-EXT-008: Should cancel edit without saving", async ({
@@ -238,10 +248,12 @@ test.describe("UC-CARD-EXTENDED: Extended Card Management Tests", () => {
         .fill("KeepThisBack");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
     });
   });
 });

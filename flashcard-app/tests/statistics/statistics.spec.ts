@@ -196,11 +196,13 @@ test.describe("UC-STATISTICS: Statistics Page", () => {
         .fill("StatsBack");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success message and verify heading
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: 'Thành công' })).toBeVisible();
-      
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await expect(
+        page.getByRole("heading", { name: "Thành công" })
+      ).toBeVisible();
+
       // Navigate to statistics page
       await page.goto("/statistics");
 

@@ -77,14 +77,14 @@ export const useDeckForm = () => {
   // Set loading immediately for edit mode - before any render happens
   // Using a ref to track if we should be loading
   const shouldLoadEditData = !!editDeckId;
-  
+
   // Fetch deck data if in edit mode
   useEffect(() => {
     if (!editDeckId) return;
 
     // Set loading true immediately when effect runs
     setIsLoading(true);
-    
+
     const fetchDeckData = async () => {
       try {
         const [deckRes, cardsRes] = await Promise.all([
@@ -396,7 +396,7 @@ export const useDeckForm = () => {
     cards,
     isSaving,
     // For edit mode, show loading if we should load but haven't finished yet
-    isLoading: shouldLoadEditData ? (isLoading || deckName === "") : isLoading,
+    isLoading: shouldLoadEditData ? isLoading || deckName === "" : isLoading,
     handleImportJSON,
     addCard,
     deleteCard,

@@ -16,18 +16,24 @@ test.describe("UC-DECK: Deck Management", () => {
         'textarea[placeholder="Mô tả ngắn về bộ thẻ này..."]',
         "Created via Playwright"
       );
-      
+
       // Add card content (required to save)
       await page.click('button:has-text("Thêm thẻ mới")');
-      await page.locator('input[placeholder="VD: Xin chào"]').last().fill("TestFront");
-      await page.locator('input[placeholder="VD: Hello"]').last().fill("TestBack");
-      
+      await page
+        .locator('input[placeholder="VD: Xin chào"]')
+        .last()
+        .fill("TestFront");
+      await page
+        .locator('input[placeholder="VD: Hello"]')
+        .last()
+        .fill("TestBack");
+
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success modal and close it
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
       await page.locator('button:has-text("Đóng")').click();
-      
+
       await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
       await expect(page.locator(`h1:has-text("${deckName}")`)).toBeVisible();
     });
@@ -57,18 +63,24 @@ test.describe("UC-DECK: Deck Management", () => {
         'input[placeholder="VD: Từ vựng IELTS, Business English..."]',
         deckName
       );
-      
+
       // Add card content (required to save)
       await page.click('button:has-text("Thêm thẻ mới")');
-      await page.locator('input[placeholder="VD: Xin chào"]').last().fill("EditFront");
-      await page.locator('input[placeholder="VD: Hello"]').last().fill("EditBack");
-      
+      await page
+        .locator('input[placeholder="VD: Xin chào"]')
+        .last()
+        .fill("EditFront");
+      await page
+        .locator('input[placeholder="VD: Hello"]')
+        .last()
+        .fill("EditBack");
+
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success modal and close it
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
       await page.locator('button:has-text("Đóng")').click();
-      
+
       await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
 
       await page.click('button:has-text("Chỉnh sửa")');
@@ -96,18 +108,24 @@ test.describe("UC-DECK: Deck Management", () => {
         'input[placeholder="VD: Từ vựng IELTS, Business English..."]',
         deckName
       );
-      
+
       // Add card content (required to save)
       await page.click('button:has-text("Thêm thẻ mới")');
-      await page.locator('input[placeholder="VD: Xin chào"]').last().fill("DeleteFront");
-      await page.locator('input[placeholder="VD: Hello"]').last().fill("DeleteBack");
-      
+      await page
+        .locator('input[placeholder="VD: Xin chào"]')
+        .last()
+        .fill("DeleteFront");
+      await page
+        .locator('input[placeholder="VD: Hello"]')
+        .last()
+        .fill("DeleteBack");
+
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success modal and close it
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
       await page.locator('button:has-text("Đóng")').click();
-      
+
       await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
 
       await page.click('button:has-text("Xóa")');

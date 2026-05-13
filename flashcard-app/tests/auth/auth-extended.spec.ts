@@ -109,10 +109,16 @@ test.describe("UC-AUTH-EXTENDED: Extended Authentication Tests", () => {
       await page.goto("/statistics");
 
       // App may either redirect to login OR show an unauthorized error
-      const isLoginPage = await page.url().includes('/login');
-      const hasError = await page.locator('text=Unauthorized').isVisible().catch(() => false);
-      const hasErrorPage = await page.locator('text=Đã xảy ra lỗi').isVisible().catch(() => false);
-      
+      const isLoginPage = await page.url().includes("/login");
+      const hasError = await page
+        .locator("text=Unauthorized")
+        .isVisible()
+        .catch(() => false);
+      const hasErrorPage = await page
+        .locator("text=Đã xảy ra lỗi")
+        .isVisible()
+        .catch(() => false);
+
       expect(isLoginPage || hasError || hasErrorPage).toBeTruthy();
     });
 

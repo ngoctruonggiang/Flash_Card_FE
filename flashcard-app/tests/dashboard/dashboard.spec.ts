@@ -96,15 +96,21 @@ test.describe("UC-DASHBOARD: Dashboard", () => {
 
       // Add card content (required)
       await page.click('button:has-text("Thêm thẻ mới")');
-      await page.locator('input[placeholder="VD: Xin chào"]').last().fill("SearchFront");
-      await page.locator('input[placeholder="VD: Hello"]').last().fill("SearchBack");
+      await page
+        .locator('input[placeholder="VD: Xin chào"]')
+        .last()
+        .fill("SearchFront");
+      await page
+        .locator('input[placeholder="VD: Hello"]')
+        .last()
+        .fill("SearchBack");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
-      
+
       // Wait for success modal and close it
-      await page.waitForSelector('text=Thành công', { timeout: 15000 });
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
       await page.locator('button:has-text("Đóng")').click();
-      
+
       await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
 
       // Go back to dashboard
@@ -130,7 +136,9 @@ test.describe("UC-DASHBOARD: Dashboard", () => {
       await page.locator("button:has(svg.lucide-log-out)").click();
 
       // Verify confirmation modal appears - use heading to be specific
-      await expect(page.getByRole('heading', { name: 'Đăng xuất' })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Đăng xuất" })
+      ).toBeVisible();
       await expect(
         page.locator("text=Bạn có chắc muốn đăng xuất?")
       ).toBeVisible();

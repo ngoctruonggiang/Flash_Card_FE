@@ -74,7 +74,9 @@ test.describe("UC-SETTINGS: Settings Management", () => {
       await page.goto("/settings");
 
       // Notification settings section check - use heading to be specific
-      const notificationSection = page.getByRole('heading', { name: 'Thông báo' });
+      const notificationSection = page.getByRole("heading", {
+        name: "Thông báo",
+      });
       if (await notificationSection.isVisible()) {
         await expect(notificationSection).toBeVisible();
       }
