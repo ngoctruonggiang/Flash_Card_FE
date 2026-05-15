@@ -108,6 +108,9 @@ test.describe("UC-AUTH-EXTENDED: Extended Authentication Tests", () => {
     }) => {
       await page.goto("/statistics");
 
+      // Wait a bit for redirect or error to show
+      await page.waitForTimeout(1000);
+
       // App may either redirect to login OR show an unauthorized error
       const isLoginPage = await page.url().includes("/login");
       const hasError = await page

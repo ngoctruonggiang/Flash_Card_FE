@@ -107,6 +107,19 @@ test.describe("UC-CARD: Card Management", () => {
       // Add TWO cards so delete is enabled (need > 1 card)
       await page.click('button:has-text("Chỉnh sửa")');
 
+      // Wait for edit mode to load and deck name to be populated
+      await page.waitForURL(/\/create-deck\?edit=/, { timeout: 15000 });
+      await page.waitForSelector(
+        'input[placeholder="VD: Từ vựng IELTS, Business English..."]',
+        { timeout: 10000 }
+      );
+
+      // Verify deck name is loaded (should have "Card Deck" in it)
+      const deckNameInput = page.locator(
+        'input[placeholder="VD: Từ vựng IELTS, Business English..."]'
+      );
+      await expect(deckNameInput).toHaveValue(/Card Deck/);
+
       // Card 1
       await page.click('button:has-text("Thêm thẻ mới")');
       await page
@@ -124,11 +137,33 @@ test.describe("UC-CARD: Card Management", () => {
       await page.locator('input[placeholder="VD: Hello"]').last().fill("Back2");
 
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
+
+      // Wait for success modal and close it
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await page.locator('button:has-text("Đóng")').click();
+
+      // Wait for navigation to deck detail page
+      await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
+
       await expect(page.locator("text=Card1")).toBeVisible({ timeout: 10000 });
       await expect(page.locator("text=DeleteMe")).toBeVisible();
 
       // Delete
       await page.click('button:has-text("Chỉnh sửa")');
+
+      // Wait for edit mode to load and deck name to be populated
+      await page.waitForURL(/\/create-deck\?edit=/, { timeout: 15000 });
+      await page.waitForSelector(
+        'input[placeholder="VD: Từ vựng IELTS, Business English..."]',
+        { timeout: 10000 }
+      );
+
+      // Verify deck name is still loaded
+      await expect(
+        page.locator(
+          'input[placeholder="VD: Từ vựng IELTS, Business English..."]'
+        )
+      ).toHaveValue(/Card Deck/);
 
       // Delete the last one ('DeleteMe')
       // Note: We need to wait for inputs to be visible
@@ -139,6 +174,13 @@ test.describe("UC-CARD: Card Management", () => {
 
       // Save
       await page.locator("button").filter({ hasText: "Lưu bộ thẻ" }).click();
+
+      // Wait for success modal and close it
+      await page.waitForSelector("text=Thành công", { timeout: 15000 });
+      await page.locator('button:has-text("Đóng")').click();
+
+      // Wait for navigation to deck detail page
+      await page.waitForURL(/\/deck\/\d+/, { timeout: 15000 });
 
       // Verify
       await expect(page.locator("text=DeleteMe")).not.toBeVisible({
